@@ -1,15 +1,20 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 
+var benchamarkConfig = ManualConfig
+	.Create(DefaultConfig.Instance)
+	.WithOptions(ConfigOptions.JoinSummary)
+	.WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Declared, MethodOrderPolicy.Declared))
+	.WithOptions(ConfigOptions.DisableLogFile)
+	.HideColumns(Column.Job, Column.StdDev, Column.Median)
+;
+
 BenchmarkRunner.Run(
 	typeof(Program).Assembly,
-	ManualConfig
-		.Create(DefaultConfig.Instance)
-		.WithOptions(ConfigOptions.JoinSummary)
-		.WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Declared, MethodOrderPolicy.Declared))
-		.WithOptions(ConfigOptions.DisableLogFile)
+	benchamarkConfig
 );
 
 #pragma warning disable CA1822 // Benchmark methods can not be static

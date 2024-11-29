@@ -93,6 +93,12 @@ public struct Ulid : IComparable, IComparable<Ulid>, IEquatable<Ulid>
 	];
 	#endregion
 
+#if NET9_0_OR_GREATER
+	private static readonly Lock _lock = new();
+#else
+	private static readonly object _lock = new();
+#endif
+
 	private static readonly byte[] _lastUlid = new byte[_ulidByteLength];
 
 	private unsafe fixed byte _bytes[_ulidByteLength];
@@ -223,7 +229,7 @@ public struct Ulid : IComparable, IComparable<Ulid>, IEquatable<Ulid>
 			return New(bytes);
 		}
 
-		lock (_lastUlid)
+		lock (_lock)
 		{
 			var lastUlidSpan = _lastUlid.AsSpan();
 
@@ -444,7 +450,7 @@ public struct Ulid : IComparable, IComparable<Ulid>, IEquatable<Ulid>
 		{
 			var vA = Unsafe.As<Ulid, Vector128<byte>>(ref Unsafe.AsRef(in this));
 			var vB = Unsafe.As<Ulid, Vector128<byte>>(ref Unsafe.AsRef(in other));
-			return Vector128.EqualsAll(vA, vB);
+			return vA == vB;
 		}
 #endif
 #if NET6_0_OR_GREATER
@@ -673,9 +679,6 @@ public struct Ulid : IComparable, IComparable<Ulid>, IEquatable<Ulid>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static Vector128<byte> Shuffle(Vector128<byte> value, Vector128<byte> mask)
 	{
-		Debug.Assert(BitConverter.IsLittleEndian);
-		Debug.Assert(_isVector128Supported);
-
 		return
 #if NET7_0_OR_GREATER
 			Vector128.IsHardwareAccelerated ? Vector128.Shuffle(value, mask) :

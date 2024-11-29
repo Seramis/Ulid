@@ -31,7 +31,7 @@ For almost all systems in the world, both GUID and integer IDs should be abandon
 - **Universally Unique**: ULIDs are designed to be globally unique.
 - **Lexicographically Sortable**: ULIDs can be sorted lexicographically, making them useful for time-based sorting.
 - **Efficient**: The implementation is designed to be efficient and performant.
-- **Compatible**: The implementation provides methods to convert ULIDs to and from GUIDs, Crockford's Base32 strings, and byte arrays.
+- **Compatible**: The implementation provides methods to convert ULIDs to and from GUIDs, Crockford's Base32 strings (canonical form), and byte arrays.
 - **Fully Compliant**: This implementation adheres strictly to the official ULID specification.
 - **Enhanced Reliability**: Eliminates the possibility of throwing an exception when the "random" part gets overflown.
 
@@ -42,72 +42,74 @@ For comparison, [NetUlid](https://github.com/ultimicro/netulid) 2.1.0, [Ulid](ht
 
 The following benchmarks were performed:
 ```
-BenchmarkDotNet v0.13.12, Windows 10 (10.0.19045.4651/22H2/2022Update)
+BenchmarkDotNet v0.14.0, Windows 10 (10.0.19045.5131/22H2/2022Update)
 AMD Ryzen 7 3700X, 1 CPU, 16 logical and 8 physical cores
-.NET SDK 8.0.302
-  [Host]     : .NET 8.0.6 (8.0.624.26715), X64 RyuJIT AVX2
-  DefaultJob : .NET 8.0.6 (8.0.624.26715), X64 RyuJIT AVX2
+.NET SDK 9.0.100
+  [Host]     : .NET 9.0.0 (9.0.24.52809), X64 RyuJIT AVX2
+  DefaultJob : .NET 9.0.0 (9.0.24.52809), X64 RyuJIT AVX2
 
-| Type            | Method         | Mean        | Error     | StdDev    | Median      | Gen0   | Allocated |
-|---------------- |--------------- |------------:|----------:|----------:|------------:|-------:|----------:|
-| Generate        | ByteAetherUlid |  56.3572 ns | 0.0701 ns | 0.0622 ns |  56.3653 ns |      - |         - |
-| Generate        | NetUlid *(1)   | 157.0403 ns | 1.0922 ns | 1.0216 ns | 156.5876 ns | 0.0095 |      80 B |
-| Generate        | NUlid *(2)     |  72.6663 ns | 0.5514 ns | 0.4604 ns |  72.7732 ns | 0.0124 |     104 B |
+Job=DefaultJob
 
-| GenerateNonMono | ByteAetherUlid |  96.5382 ns | 0.5341 ns | 0.4996 ns |  96.7502 ns |      - |         - |
-| GenerateNonMono | Ulid *(3,4)    |  43.9369 ns | 0.1319 ns | 0.1234 ns |  43.8794 ns |      - |         - |
-| GenerateNonMono | NUlid          | 116.2871 ns | 0.6558 ns | 0.5476 ns | 116.1259 ns | 0.0124 |     104 B |
-| GenerateNonMono | Guid           |  47.9964 ns | 0.2624 ns | 0.2454 ns |  48.0948 ns |      - |         - |
+| Type            | Method         | Mean        | Error     | Gen0   | Allocated |
+|---------------- |--------------- |------------:|----------:|-------:|----------:|
+| Generate        | ByteAetherUlid |  54.4466 ns | 0.2331 ns |      - |         - |
+| Generate        | NetUlid *(1)   | 160.6932 ns | 1.7455 ns | 0.0095 |      80 B |
+| Generate        | NUlid *(2)     |  74.2981 ns | 0.6811 ns | 0.0124 |     104 B |
 
-| FromByteArray   | ByteAetherUlid |   0.2859 ns | 0.0166 ns | 0.0147 ns |   0.2853 ns |      - |         - |
-| FromByteArray   | NetUlid        |   5.6834 ns | 0.0562 ns | 0.0499 ns |   5.6680 ns |      - |         - |
-| FromByteArray   | Ulid           |   7.0427 ns | 0.0347 ns | 0.0308 ns |   7.0335 ns |      - |         - |
-| FromByteArray   | NUlid          |  10.8101 ns | 0.0530 ns | 0.0496 ns |  10.8234 ns |      - |         - |
-| FromByteArray   | Guid           |   0.4294 ns | 0.0033 ns | 0.0027 ns |   0.4303 ns |      - |         - |
+| GenerateNonMono | ByteAetherUlid |  97.3747 ns | 0.3449 ns |      - |         - |
+| GenerateNonMono | Ulid *(3,4)    |  44.0165 ns | 0.1488 ns |      - |         - |
+| GenerateNonMono | NUlid          | 114.2276 ns | 0.5517 ns | 0.0124 |     104 B |
+| GenerateNonMono | Guid           |  47.3825 ns | 0.1112 ns |      - |         - |
 
-| FromGuid        | ByteAetherUlid |   1.6238 ns | 0.0053 ns | 0.0047 ns |   1.6241 ns |      - |         - |
-| FromGuid        | NetUlid        |   8.8354 ns | 0.2060 ns | 0.4161 ns |   8.6969 ns | 0.0048 |      40 B |
-| FromGuid        | Ulid           |   1.7052 ns | 0.0083 ns | 0.0074 ns |   1.7030 ns |      - |         - |
-| FromGuid        | NUlid          |  14.5802 ns | 0.1935 ns | 0.1616 ns |  14.5280 ns | 0.0048 |      40 B |
+| FromByteArray   | ByteAetherUlid |   0.0000 ns | 0.0000 ns |      - |         - |
+| FromByteArray   | NetUlid        |   0.6843 ns | 0.0024 ns |      - |         - |
+| FromByteArray   | Ulid           |   6.9964 ns | 0.0190 ns |      - |         - |
+| FromByteArray   | NUlid          |  10.7442 ns | 0.0240 ns |      - |         - |
+| FromByteArray   | Guid           |   0.2575 ns | 0.0049 ns |      - |         - |
 
-| FromString      | ByteAetherUlid |  15.0717 ns | 0.0388 ns | 0.0344 ns |  15.0555 ns |      - |         - |
-| FromString      | NetUlid        |  27.8942 ns | 0.1240 ns | 0.1035 ns |  27.8519 ns |      - |         - |
-| FromString      | Ulid           |  14.9791 ns | 0.0595 ns | 0.0556 ns |  14.9838 ns |      - |         - |
-| FromString      | NUlid          |  87.4631 ns | 1.7932 ns | 3.3680 ns |  86.6425 ns | 0.0324 |     272 B |
-| FromString      | Guid           |  23.3885 ns | 0.3360 ns | 0.2979 ns |  23.2575 ns |      - |         - |
+| FromGuid        | ByteAetherUlid |   1.6311 ns | 0.0034 ns |      - |         - |
+| FromGuid        | NetUlid        |   5.2728 ns | 0.0759 ns | 0.0048 |      40 B |
+| FromGuid        | Ulid           |   1.6940 ns | 0.0023 ns |      - |         - |
+| FromGuid        | NUlid          |  14.3225 ns | 0.0379 ns | 0.0048 |      40 B |
 
-| ToByteArray     | ByteAetherUlid |   4.1512 ns | 0.1371 ns | 0.1877 ns |   4.0842 ns | 0.0048 |      40 B |
-| ToByteArray     | NetUlid        |  10.8610 ns | 0.2149 ns | 0.2010 ns |  10.8313 ns | 0.0048 |      40 B |
-| ToByteArray     | Ulid           |   3.9299 ns | 0.0871 ns | 0.0773 ns |   3.9133 ns | 0.0048 |      40 B |
-| ToByteArray     | NUlid          |   7.5605 ns | 0.1892 ns | 0.1677 ns |   7.5743 ns | 0.0048 |      40 B |
+| FromString      | ByteAetherUlid |  15.5433 ns | 0.0376 ns |      - |         - |
+| FromString      | NetUlid        |  27.1990 ns | 0.0730 ns |      - |         - |
+| FromString      | Ulid           |  15.0990 ns | 0.0869 ns |      - |         - |
+| FromString      | NUlid          |  81.3847 ns | 1.0069 ns | 0.0324 |     272 B |
+| FromString      | Guid           |  22.7008 ns | 0.0807 ns |      - |         - |
 
-| ToGuid          | ByteAetherUlid |   0.5201 ns | 0.0214 ns | 0.0179 ns |   0.5146 ns |      - |         - |
-| ToGuid          | NetUlid        |  14.1831 ns | 0.0412 ns | 0.0344 ns |  14.1709 ns | 0.0048 |      40 B |
-| ToGuid          | Ulid           |   0.4444 ns | 0.0028 ns | 0.0025 ns |   0.4447 ns |      - |         - |
-| ToGuid          | NUlid          |  14.3233 ns | 0.2111 ns | 0.1975 ns |  14.2974 ns | 0.0048 |      40 B |
+| ToByteArray     | ByteAetherUlid |   3.9814 ns | 0.0872 ns | 0.0048 |      40 B |
+| ToByteArray     | NetUlid        |   9.9516 ns | 0.1120 ns | 0.0048 |      40 B |
+| ToByteArray     | Ulid           |   3.7345 ns | 0.0778 ns | 0.0048 |      40 B |
+| ToByteArray     | NUlid          |   7.4857 ns | 0.1334 ns | 0.0048 |      40 B |
 
-| ToString        | ByteAetherUlid |  23.2149 ns | 0.3957 ns | 0.3702 ns |  23.3001 ns | 0.0095 |      80 B |
-| ToString        | NetUlid        |  23.5301 ns | 0.5171 ns | 0.5748 ns |  23.4131 ns | 0.0095 |      80 B |
-| ToString        | Ulid           |  21.1645 ns | 0.4603 ns | 0.5300 ns |  21.1597 ns | 0.0095 |      80 B |
-| ToString        | NUlid          |  56.9675 ns | 1.1865 ns | 1.3664 ns |  56.5184 ns | 0.0430 |     360 B |
-| ToString        | Guid           |  12.2343 ns | 0.2885 ns | 0.2558 ns |  12.1706 ns | 0.0115 |      96 B |
+| ToGuid          | ByteAetherUlid |   0.7166 ns | 0.0009 ns |      - |         - |
+| ToGuid          | NetUlid        |  12.3059 ns | 0.1163 ns | 0.0048 |      40 B |
+| ToGuid          | Ulid           |   0.7384 ns | 0.0079 ns |      - |         - |
+| ToGuid          | NUlid          |  12.2188 ns | 0.1052 ns | 0.0048 |      40 B |
 
-| CompareTo       | ByteAetherUlid |   2.2098 ns | 0.0128 ns | 0.0113 ns |   2.2027 ns |      - |         - |
-| CompareTo       | NetUlid        |   3.1096 ns | 0.0366 ns | 0.0342 ns |   3.1074 ns |      - |         - |
-| CompareTo       | Ulid           |   2.1023 ns | 0.0107 ns | 0.0095 ns |   2.1005 ns |      - |         - |
-| CompareTo       | NUlid          |  10.3192 ns | 0.1550 ns | 0.1449 ns |  10.3099 ns | 0.0048 |      40 B |
+| ToString        | ByteAetherUlid |  21.0633 ns | 0.3459 ns | 0.0095 |      80 B |
+| ToString        | NetUlid        |  22.5619 ns | 0.3377 ns | 0.0095 |      80 B |
+| ToString        | Ulid           |  19.7406 ns | 0.2671 ns | 0.0095 |      80 B |
+| ToString        | NUlid          |  53.6629 ns | 0.1617 ns | 0.0430 |     360 B |
+| ToString        | Guid           |  12.0498 ns | 0.0899 ns | 0.0115 |      96 B |
 
-| Equals          | ByteAetherUlid |   0.4843 ns | 0.0026 ns | 0.0020 ns |   0.4839 ns |      - |         - |
-| Equals          | NetUlid        |   0.9311 ns | 0.0180 ns | 0.0159 ns |   0.9311 ns |      - |         - |
-| Equals          | Ulid           |   0.0329 ns | 0.0293 ns | 0.0260 ns |   0.0178 ns |      - |         - |
-| Equals          | NUlid          |  19.8798 ns | 0.4241 ns | 0.8271 ns |  19.7657 ns | 0.0095 |      80 B |
-| Equals          | Guid           |   0.0243 ns | 0.0152 ns | 0.0127 ns |   0.0207 ns |      - |         - |
+| CompareTo       | ByteAetherUlid |   0.4954 ns | 0.0048 ns |      - |         - |
+| CompareTo       | NetUlid        |   3.9930 ns | 0.0270 ns |      - |         - |
+| CompareTo       | Ulid           |   2.0029 ns | 0.0092 ns |      - |         - |
+| CompareTo       | NUlid          |   9.1245 ns | 0.1161 ns | 0.0048 |      40 B |
 
-| GetHashCode     | ByteAetherUlid |   0.0003 ns | 0.0004 ns | 0.0004 ns |   0.0001 ns |      - |         - |
-| GetHashCode     | NetUlid        |   9.8575 ns | 0.0128 ns | 0.0114 ns |   9.8609 ns |      - |         - |
-| GetHashCode     | Ulid           |   0.0024 ns | 0.0057 ns | 0.0053 ns |   0.0000 ns |      - |         - |
-| GetHashCode     | NUlid          |  13.5207 ns | 0.2050 ns | 0.1817 ns |  13.5608 ns | 0.0048 |      40 B |
-| GetHashCode     | Guid           |   0.0000 ns | 0.0000 ns | 0.0000 ns |   0.0000 ns |      - |         - |
+| Equals          | ByteAetherUlid |   0.4534 ns | 0.0025 ns |      - |         - |
+| Equals          | NetUlid        |   1.1755 ns | 0.0154 ns |      - |         - |
+| Equals          | Ulid           |   0.0163 ns | 0.0024 ns |      - |         - |
+| Equals          | NUlid          |  17.6854 ns | 0.3190 ns | 0.0095 |      80 B |
+| Equals          | Guid           |   0.0000 ns | 0.0000 ns |      - |         - |
+
+| GetHashCode     | ByteAetherUlid |   0.0000 ns | 0.0000 ns |      - |         - |
+| GetHashCode     | NetUlid        |   9.7133 ns | 0.0129 ns |      - |         - |
+| GetHashCode     | Ulid           |   0.0000 ns | 0.0000 ns |      - |         - |
+| GetHashCode     | NUlid          |  13.5635 ns | 0.1188 ns | 0.0048 |      40 B |
+| GetHashCode     | Guid           |   0.0138 ns | 0.0036 ns |      - |         - |
 ```
 All competitive libraries deviate from the official ULID specification in various ways or have other drawbacks:
   1. `NetUlid`: Can only maintain monotonicity in the scope of a single thread.
@@ -169,14 +171,14 @@ The `Ulid` implementation provides the following methods:
 - `Ulid.New(Guid guid)`: Create from existing `Guid`.
 - `Ulid.New(DateTimeOffset dateTimeOffset, bool isMonotonic = true)`: Generates new ULID using given `DateTimeOffset`
 - `Ulid.New(long timestamp, bool isMonotonic = true)`: Generates new ULID using given `long` unix timestamp.
-- `Ulid.Parse(ReadOnlySpan<char> chars, IFormatProvider? provider = null)`: Creates from existing array of `char`s. `IFormatProvider` is irrelevant.
+- `Ulid.Parse(ReadOnlySpan<char> chars, IFormatProvider? provider = null)`: Creates from existing array of `char`s of canonical form. `IFormatProvider` is irrelevant.
 - `Ulid.TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Ulid result)`: Same as previous using `Try*()` pattern.
-- `Ulid.Parse(string s, IFormatProvider? provider = null)`: Creates from existing `string`. `IFormatProvider` is irrelevant.
+- `Ulid.Parse(string s, IFormatProvider? provider = null)`: Creates from existing `string` of canonical form. `IFormatProvider` is irrelevant.
 - `Ulid.TryParse(string? s, IFormatProvider? provider, out Ulid result)`: Same as previous using `Try*()` pattern.
 - `.ToByteArray()`: Converts the ULID to a byte array.
 - `.ToGuid()`: Converts the ULID to a GUID.
-- `.ToString(string? format = null, IFormatProvider? formatProvider = null)`: Converts the ULID to a string representation. (Formatting arguments are irrelevant)
-- `.Copy()`: Creates another ULID with identical value
+- `.ToString(string? format = null, IFormatProvider? formatProvider = null)`: Converts the ULID to a canonical string representation. (Formatting arguments are irrelevant)
+- `.Copy()`: Allocates another ULID with identical value
 - All comparison operators: `GetHashCode`, `Equals`, `CompareTo`, `==`, `!=`, `<`, `<=`, `>`, `>=`.
 - Explicit operators to and from `Guid`.
 
@@ -186,7 +188,7 @@ The `Ulid` implementation provides the following methods:
 The `Ulid` structure has `TypeConverter` applied so ULIDs can be used as an argument on the action (e.g. query string, route parameter, etc.) without any additional works. The input will be accepted as canonical form.
 
 ### System.Text.Json
-The `Ulid` structure has `JsonConverterAttribute` applied so that mean it can be using with `System.Text.Json` without any additional works.
+The `Ulid` structure has `JsonConverterAttribute` applied so that it can be used with `System.Text.Json` without any additional works.
 
 ## Prior Art
 

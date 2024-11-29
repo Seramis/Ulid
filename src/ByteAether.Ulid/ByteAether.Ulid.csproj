@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net8.0;net7.0;net6.0;netstandard2.1</TargetFrameworks>
+	<TargetFrameworks>net9.0;net8.0;net7.0;net6.0;netstandard2.1</TargetFrameworks>
 	<LangVersion>Latest</LangVersion>
 	<OutputType>Library</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' ">
-	<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
+	<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.0" />
   </ItemGroup>
 
   <ItemGroup>

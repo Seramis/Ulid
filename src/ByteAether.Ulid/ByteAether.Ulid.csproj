@@ -15,15 +15,16 @@
 	<Title>Ulid</Title>
 	<Authors>Joonatan Uusväli</Authors>
 	<Company>ByteAether</Company>
-	<Description>A .NET library for generating and working with Universally Unique Lexicographically Sortable Identifiers (ULIDs). ULIDs are designed to be globally unique, sortable, and human-readable, making them ideal for use in distributed systems and databases.</Description>
+	<Description>A lightweight, high-performance library for generating and working with ULIDs (Universally Unique Lexicographically Sortable Identifiers) in .NET. Supports monotonic ULID generation, Base32 encoding, and cross-platform compatibility. Ideal for databases, distributed systems, and scenarios requiring unique, sortable, timestamped identifiers.</Description>
 	<PackageProjectUrl>https://github.com/ByteAether/Ulid</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/ByteAether/Ulid.git</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 	
 	<PackageId>ByteAether.Ulid</PackageId>
-	<PackageTags>ulid;unique identifier;lexicographically sortable;globally unique;distributed systems;database;guid;uuid;sortable;human-readable</PackageTags>
+	<PackageTags>ulid;identifier;unique-identifier;universal-identifier;lexicographically-sortable;id-generator;globally-unique;globally-unique-identifier;distributed-systems;database;guid;uuid;sortable;human-readable;monotonic;primary-key;base32;cross-platform</PackageTags>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<PackageIcon>Logo.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' ">
@@ -39,6 +40,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+	<None Include="..\..\Logo.png">
+	  <Pack>True</Pack>
+	  <PackagePath>\</PackagePath>
+	</None>
   </ItemGroup>
 
 </Project>

@@ -124,9 +124,9 @@ public class ToString
 [MemoryDiagnoser]
 public class FromString
 {
-	public static ByteAether.Ulid.Ulid _ulid = ByteAether.Ulid.Ulid.New();
-	public static string _ulidString = _ulid.ToString();
-	public static string _guidString = new System.Guid(_ulid.ToByteArray()).ToString();
+	private static ByteAether.Ulid.Ulid _ulid = ByteAether.Ulid.Ulid.New();
+	private static readonly string _ulidString = _ulid.ToString();
+	private static readonly string _guidString = new System.Guid(_ulid.ToByteArray()).ToString();
 
 	[Benchmark]
 	public ByteAether.Ulid.Ulid ByteAetherUlid() => ByteAether.Ulid.Ulid.Parse(_ulidString);
@@ -170,7 +170,7 @@ public class ToGuid
 [MemoryDiagnoser]
 public class FromGuid
 {
-	public static System.Guid _ulidGuid = ByteAether.Ulid.Ulid.New().ToGuid();
+	private static readonly System.Guid _ulidGuid = ByteAether.Ulid.Ulid.New().ToGuid();
 
 	[Benchmark]
 	public ByteAether.Ulid.Ulid ByteAetherUlid() => ByteAether.Ulid.Ulid.New(_ulidGuid);

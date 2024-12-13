@@ -369,20 +369,20 @@ public struct Ulid : IComparable, IComparable<Ulid>, IEquatable<Ulid>
 
 		data[15] = (byte)((_inverseBase32[(uint)chars[24]] << 5) | _inverseBase32[(uint)chars[25]]);
 
-		data[00] = (byte)((_inverseBase32[(uint)chars[0]] << 5) | _inverseBase32[(uint)chars[1]]);                                  // |00[111|11111|][11111111][11111111][11111111][11111111][11111111]
-		data[01] = (byte)((_inverseBase32[(uint)chars[2]] << 3) | (_inverseBase32[(uint)chars[3]] >> 2));                               // 00[11111111][|11111|111][11|111111][11111111][11111111][11111111]
+		data[00] = (byte)((_inverseBase32[(uint)chars[0]] << 5) | _inverseBase32[(uint)chars[1]]);                                                         // |00[111|11111|][11111111][11111111][11111111][11111111][11111111]
+		data[01] = (byte)((_inverseBase32[(uint)chars[2]] << 3) | (_inverseBase32[(uint)chars[3]] >> 2));                                                  // 00[11111111][|11111|111][11|111111][11111111][11111111][11111111]
 		data[02] = (byte)((_inverseBase32[(uint)chars[3]] << 6) | (_inverseBase32[(uint)chars[4]] << 1) | (_inverseBase32[(uint)chars[5]] >> 4));    // 00[11111111][11111|111][11|11111|1][1111|1111][11111111][11111111]
-		data[03] = (byte)((_inverseBase32[(uint)chars[5]] << 4) | (_inverseBase32[(uint)chars[6]] >> 1));                               // 00[11111111][11111111][1111111|1][1111|1111][1|1111111][11111111]
+		data[03] = (byte)((_inverseBase32[(uint)chars[5]] << 4) | (_inverseBase32[(uint)chars[6]] >> 1));                                                  // 00[11111111][11111111][1111111|1][1111|1111][1|1111111][11111111]
 		data[04] = (byte)((_inverseBase32[(uint)chars[6]] << 7) | (_inverseBase32[(uint)chars[7]] << 2) | (_inverseBase32[(uint)chars[8]] >> 3));    // 00[11111111][11111111][11111111][1111|1111][1|11111|11][111|11111]
-		data[05] = (byte)((_inverseBase32[(uint)chars[8]] << 5) | _inverseBase32[(uint)chars[9]]);                                  // 00[11111111][11111111][11111111][11111111][111111|11][111|11111|]
-		data[06] = (byte)((_inverseBase32[(uint)chars[10]] << 3) | (_inverseBase32[(uint)chars[11]] >> 2));                         // [|11111|111][11|111111][11111111][11111111][11111111][11111111][11111111][11111111][11111111][11111111]
+		data[05] = (byte)((_inverseBase32[(uint)chars[8]] << 5) | _inverseBase32[(uint)chars[9]]);                                                         // 00[11111111][11111111][11111111][11111111][111111|11][111|11111|]
+		data[06] = (byte)((_inverseBase32[(uint)chars[10]] << 3) | (_inverseBase32[(uint)chars[11]] >> 2));                                                // [|11111|111][11|111111][11111111][11111111][11111111][11111111][11111111][11111111][11111111][11111111]
 		data[07] = (byte)((_inverseBase32[(uint)chars[11]] << 6) | (_inverseBase32[(uint)chars[12]] << 1) | (_inverseBase32[(uint)chars[13]] >> 4)); // [11111|111][11|11111|1][1111|1111][11111111][11111111][11111111][11111111][11111111][11111111][11111111]
-		data[08] = (byte)((_inverseBase32[(uint)chars[13]] << 4) | (_inverseBase32[(uint)chars[14]] >> 1));                         // [11111111][1111111|1][1111|1111][1|1111111][11111111][11111111][11111111][11111111][11111111][11111111]
+		data[08] = (byte)((_inverseBase32[(uint)chars[13]] << 4) | (_inverseBase32[(uint)chars[14]] >> 1));                                                // [11111111][1111111|1][1111|1111][1|1111111][11111111][11111111][11111111][11111111][11111111][11111111]
 		data[09] = (byte)((_inverseBase32[(uint)chars[14]] << 7) | (_inverseBase32[(uint)chars[15]] << 2) | (_inverseBase32[(uint)chars[16]] >> 3)); // [11111111][11111111][1111|1111][1|11111|11][111|11111][11111111][11111111][11111111][11111111][11111111]
-		data[10] = (byte)((_inverseBase32[(uint)chars[16]] << 5) | _inverseBase32[(uint)chars[17]]);                                    // [11111111][11111111][11111111][111111|11][111|11111|][11111111][11111111][11111111][11111111][11111111]
-		data[11] = (byte)((_inverseBase32[(uint)chars[18]] << 3) | (_inverseBase32[(uint)chars[19]] >> 2));                         // [11111111][11111111][11111111][11111111][11111111][|11111|111][11|111111][11111111][11111111][11111111]
+		data[10] = (byte)((_inverseBase32[(uint)chars[16]] << 5) | _inverseBase32[(uint)chars[17]]);                                                       // [11111111][11111111][11111111][111111|11][111|11111|][11111111][11111111][11111111][11111111][11111111]
+		data[11] = (byte)((_inverseBase32[(uint)chars[18]] << 3) | (_inverseBase32[(uint)chars[19]] >> 2));                                                // [11111111][11111111][11111111][11111111][11111111][|11111|111][11|111111][11111111][11111111][11111111]
 		data[12] = (byte)((_inverseBase32[(uint)chars[19]] << 6) | (_inverseBase32[(uint)chars[20]] << 1) | (_inverseBase32[(uint)chars[21]] >> 4)); // [11111111][11111111][11111111][11111111][11111111][11111|111][11|11111|1][1111|1111][11111111][11111111]
-		data[13] = (byte)((_inverseBase32[(uint)chars[21]] << 4) | (_inverseBase32[(uint)chars[22]] >> 1));                         // [11111111][11111111][11111111][11111111][11111111][11111111][1111111|1][1111|1111][1|1111111][11111111]
+		data[13] = (byte)((_inverseBase32[(uint)chars[21]] << 4) | (_inverseBase32[(uint)chars[22]] >> 1));                                                // [11111111][11111111][11111111][11111111][11111111][11111111][1111111|1][1111|1111][1|1111111][11111111]
 		data[14] = (byte)((_inverseBase32[(uint)chars[22]] << 7) | (_inverseBase32[(uint)chars[23]] << 2) | (_inverseBase32[(uint)chars[24]] >> 3)); // [11111111][11111111][11111111][11111111][11111111][11111111][11111111][1111|1111][1|11111|11][111|11111]
 
 		return MemoryMarshal.Read<Ulid>(data);
@@ -671,9 +671,9 @@ public struct Ulid : IComparable, IComparable<Ulid>, IEquatable<Ulid>
 #if NET6_0_OR_GREATER
 	private static bool _isVector128Supported =>
 #if NET7_0_OR_GREATER
-			Vector128.IsHardwareAccelerated;
+		Vector128.IsHardwareAccelerated;
 #else
-			Sse3.IsSupported;
+		Sse3.IsSupported;
 #endif
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

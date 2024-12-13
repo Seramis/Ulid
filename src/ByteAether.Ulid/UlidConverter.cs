@@ -9,6 +9,8 @@ namespace ByteAether.Ulid;
 /// </summary>
 public class UlidConverter : TypeConverter
 {
+	private static readonly Type[] _convertibleTypes = [typeof(string), typeof(byte[]), typeof(Guid)];
+
 	/// <summary>
 	/// Returns whether this converter can convert an object of the given type to the type of this converter, using the specified context.
 	/// </summary>
@@ -16,13 +18,8 @@ public class UlidConverter : TypeConverter
 	/// <param name="sourceType">A <see cref="Type"/> that represents the type you want to convert from.</param>
 	/// <returns><see langword="true"/> if this converter can perform the conversion; otherwise, <see langword="false"/>.</returns>
 	public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
-	{
-		return
-			sourceType == typeof(string)
-			|| sourceType == typeof(Guid)
-			|| sourceType == typeof(byte[])
+		=> _convertibleTypes.Contains(sourceType)
 			|| base.CanConvertFrom(context, sourceType);
-	}
 
 	/// <summary>
 	/// Converts the given object to the type of this converter, using the specified context and culture information.
@@ -32,15 +29,13 @@ public class UlidConverter : TypeConverter
 	/// <param name="value">The <see cref="object"/> to convert.</param>
 	/// <returns>An <see cref="object"/> that represents the converted value.</returns>
 	public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
-	{
-		return value switch
+		=> value switch
 		{
 			string s => Ulid.Parse(s),
 			byte[] b => Ulid.New(b),
 			Guid guid => Ulid.New(guid),
 			_ => base.ConvertFrom(context, culture, value),
 		};
-	}
 
 	/// <summary>
 	/// Returns whether this converter can convert the object to the specified type, using the specified context.
@@ -49,13 +44,8 @@ public class UlidConverter : TypeConverter
 	/// <param name="destinationType">A <see cref="Type"/> that represents the type you want to convert to.</param>
 	/// <returns><see langword="true"/> if this converter can perform the conversion; otherwise, <see langword="false"/>.</returns>
 	public override bool CanConvertTo(ITypeDescriptorContext? context, [NotNullWhen(true)] Type? destinationType)
-	{
-		return
-			destinationType == typeof(string)
-			|| destinationType == typeof(Guid)
-			|| destinationType == typeof(byte[])
+		=> _convertibleTypes.Contains(destinationType)
 			|| base.CanConvertTo(context, destinationType);
-	}
 
 	/// <summary>
 	/// Converts the given value object to the specified type, using the specified context and culture information.
@@ -66,23 +56,10 @@ public class UlidConverter : TypeConverter
 	/// <param name="destinationType">The <see cref="Type"/> to convert the value to.</param>
 	/// <returns>An <see cref="object"/> that represents the converted value.</returns>
 	public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
-	{
-		if (value is Ulid ulid)
-		{
-			if (destinationType == typeof(string))
-			{
-				return ulid.ToString();
-			}
-			else if (destinationType == typeof(byte[]))
-			{
-				return ulid.ToByteArray();
-			}
-			else if (destinationType == typeof(Guid))
-			{
-				return ulid.ToGuid();
-			}
-		}
-
-		return base.ConvertTo(context, culture, value, destinationType);
-	}
+		=> value is Ulid ulid
+			? destinationType == typeof(string) ? ulid.ToString()
+			: destinationType == typeof(byte[]) ? ulid.ToByteArray()
+			: destinationType == typeof(Guid) ? ulid.ToGuid()
+			: base.ConvertTo(context, culture, value, destinationType)
+		: base.ConvertTo(context, culture, value, destinationType);
 }

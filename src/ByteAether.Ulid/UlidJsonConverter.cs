@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace ByteAether.Ulid;
 
 /// <summary>
-/// A custom JSON converter for the <see cref="Ulid"/> type.
+/// A custom JSON converter for the <see cref="ByteAether.Ulid"/> type.
 /// </summary>
 public class UlidJsonConverter : JsonConverter<Ulid>
 {
@@ -15,7 +15,7 @@ public class UlidJsonConverter : JsonConverter<Ulid>
 	/// <param name="reader">The reader.</param>
 	/// <param name="typeToConvert">The type to convert.</param>
 	/// <param name="options">The serializer options.</param>
-	/// <returns>The converted <see cref="Ulid"/> object.</returns>
+	/// <returns>The converted <see cref="ByteAether.Ulid"/> object.</returns>
 	/// <exception cref="ArgumentException">Thrown when the JSON value is null.</exception>
 	/// <exception cref="JsonException">Thrown when the JSON value is not a valid ULID.</exception>
 	public override Ulid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

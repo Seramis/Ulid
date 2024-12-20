@@ -5,9 +5,9 @@ using System.Globalization;
 namespace ByteAether.Ulid;
 
 /// <summary>
-/// A type converter for the <see cref="Ulid"/> type.
+/// A type converter for the <see cref="ByteAether.Ulid"/> type.
 /// </summary>
-public class UlidConverter : TypeConverter
+public class UlidTypeConverter : TypeConverter
 {
 	private static readonly Type[] _convertibleTypes = [typeof(string), typeof(byte[]), typeof(Guid)];
 

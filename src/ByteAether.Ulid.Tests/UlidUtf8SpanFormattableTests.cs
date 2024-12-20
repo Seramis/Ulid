@@ -14,11 +14,14 @@ public class UlidUtf8SpanFormattableTests
 		Assert.Equal(26, bytesWritten);
 	}
 
-	[Fact]
-	public void TryFormat_InvalidSpan_ReturnsFalse()
+	[Theory]
+	[InlineData(0)]
+	[InlineData(1)]
+	[InlineData(25)]
+	public void TryFormat_InvalidSpan_ReturnsFalse(int spanSize)
 	{
 		var ulid = Ulid.New();
-		Span<byte> span = new byte[10];
+		Span<byte> span = new byte[spanSize];
 
 		var result = ulid.TryFormat(span, out var bytesWritten, [], null);
 

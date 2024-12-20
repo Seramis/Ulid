@@ -9,7 +9,10 @@ public class UlidComparableTests
 		var ulid2 = ulid1;
 
 		Assert.Equal(0, ulid1.CompareTo(ulid2));
-		Assert.True(ulid1 == ulid2);
+		Assert.False(ulid1 < ulid2);
+		Assert.True(ulid1 <= ulid2);
+		Assert.True(ulid1 >= ulid2);
+		Assert.False(ulid1 > ulid2);
 	}
 
 	[Fact]
@@ -22,6 +25,9 @@ public class UlidComparableTests
 
 		Assert.True(result < 0, $"{ulid1} < {ulid2}: {result}");
 		Assert.True(ulid1 < ulid2);
+		Assert.True(ulid1 <= ulid2);
+		Assert.False(ulid1 > ulid2);
+		Assert.False(ulid1 >= ulid2);
 	}
 
 	[Fact]
@@ -34,6 +40,9 @@ public class UlidComparableTests
 
 		Assert.True(result > 0, $"{ulid2} > {ulid1}: {result}");
 		Assert.True(ulid2 > ulid1);
+		Assert.True(ulid2 >= ulid1);
+		Assert.False(ulid2 < ulid1);
+		Assert.False(ulid2 <= ulid1);
 	}
 
 	[Fact]

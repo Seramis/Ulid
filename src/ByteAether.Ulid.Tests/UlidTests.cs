@@ -2,31 +2,46 @@
 
 public class UlidTests
 {
-	[Fact]
-	public void New_GeneratesUniqueUlid()
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void New_GeneratesUniqueUlid(bool isMonotonic)
 	{
-		var ulid1 = Ulid.New();
-		var ulid2 = Ulid.New();
+		var ulid1 = Ulid.New(isMonotonic);
+		var ulid2 = Ulid.New(isMonotonic);
+
+		Assert.NotEqual(ulid1, ulid2);
+	}
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void New_WithGivenDateTime_GeneratesUniqueUlid(bool isMonotonic)
+	{
+		var dateTimeOffset = DateTimeOffset.UtcNow;
+
+		var ulid1 = Ulid.New(dateTimeOffset, isMonotonic);
+		var ulid2 = Ulid.New(dateTimeOffset, isMonotonic);
+
+		Assert.Equal(ulid1.Time, ulid2.Time);
+		Assert.NotEqual(ulid1.Random.ToArray(), ulid2.Random.ToArray());
 
 		Assert.NotEqual(ulid1, ulid2);
 	}
 
 	[Fact]
-	public void New_NonMonotonic_GeneratesUniqueUlid()
+	public void New_WithGivenDateTimeAndRandom_GeneratesSameUlid()
 	{
-		var ulid1 = Ulid.New(false);
-		var ulid2 = Ulid.New(false);
+		var dateTimeOffset = DateTimeOffset.UtcNow;
+		var random = new byte[10];
 
-		Assert.NotEqual(ulid1, ulid2);
-	}
+		var ulid1 = Ulid.New(dateTimeOffset, random);
+		var ulid2 = Ulid.New(dateTimeOffset, random);
 
-	[Fact]
-	public void New_WithGivenDateTime_GeneratesUniqueUlid()
-	{
-		var ulid1 = Ulid.New(DateTimeOffset.UtcNow);
-		var ulid2 = Ulid.New(DateTimeOffset.UtcNow);
+		Assert.Equal(ulid1.Time, ulid2.Time);
+		Assert.Equal(ulid1.Random.ToArray(), ulid2.Random.ToArray());
 
-		Assert.NotEqual(ulid1, ulid2);
+		Assert.Equal(ulid1, ulid2);
 	}
 
 	[Fact]
@@ -59,15 +74,6 @@ public class UlidTests
 		var ulid2 = Ulid.Parse(ulidString);
 
 		Assert.Equal(26, ulidString.Length);
-		Assert.Equal(ulid, ulid2);
-	}
-
-	[Fact]
-	public void Copy_AreEqual()
-	{
-		var ulid = Ulid.New();
-		var ulid2 = ulid.Copy();
-
 		Assert.Equal(ulid, ulid2);
 	}
 }

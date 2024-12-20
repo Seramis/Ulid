@@ -2,15 +2,16 @@
 
 public class UlidSpanParsableTests
 {
+	private static readonly Ulid _ulid = Ulid.New();
+
 	[Fact]
 	public void TryParse_ValidString_ReturnsTrue()
 	{
-		var ulidString = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
-
-		var result = Ulid.TryParse(ulidString, null, out var ulid);
+		var result = Ulid.TryParse(_ulid.ToString(), null, out var ulid);
 
 		Assert.True(result);
 		Assert.NotEqual(default, ulid);
+		Assert.Equal(_ulid, ulid);
 	}
 
 	[Fact]
@@ -38,13 +39,11 @@ public class UlidSpanParsableTests
 	[Fact]
 	public void TryParse_ValidSpan_ReturnsTrue()
 	{
-		var ulidString = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
-		var span = ulidString.AsSpan();
-
-		var result = Ulid.TryParse(span, null, out var ulid);
+		var result = Ulid.TryParse(_ulid.ToString().AsSpan(), null, out var ulid);
 
 		Assert.True(result);
 		Assert.NotEqual(default, ulid);
+		Assert.Equal(_ulid, ulid);
 	}
 
 	[Fact]

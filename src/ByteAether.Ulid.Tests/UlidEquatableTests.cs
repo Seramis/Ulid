@@ -9,6 +9,8 @@ public class UlidEquatableTests
 		var ulid2 = ulid1;
 
 		Assert.True(ulid1.Equals(ulid2));
+		Assert.True(ulid1 == ulid2);
+		Assert.False(ulid1 != ulid2);
 	}
 
 	[Fact]
@@ -18,6 +20,8 @@ public class UlidEquatableTests
 		var ulid2 = Ulid.New();
 
 		Assert.False(ulid1.Equals(ulid2));
+		Assert.False(ulid1 == ulid2);
+		Assert.True(ulid1 != ulid2);
 	}
 
 	[Fact]

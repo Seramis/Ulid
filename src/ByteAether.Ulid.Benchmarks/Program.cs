@@ -51,26 +51,19 @@ public class GenerateNonMono
 }
 
 [MemoryDiagnoser]
-public class ToByteArray
+public class ToByteArray : BenchmarkBase
 {
-	private static readonly byte[] _baseUlidBytes = ByteAether.Ulid.Ulid.New().ToByteArray();
-
-	private static readonly ByteAether.Ulid.Ulid _superUlid = ByteAether.Ulid.Ulid.New(_baseUlidBytes);
-	private static readonly NetUlid.Ulid _netUlid = new(_baseUlidBytes);
-	private static readonly System.Ulid _ulid = new(_baseUlidBytes);
-	private static readonly NUlid.Ulid _nulid = new(_baseUlidBytes);
+	[Benchmark]
+	public byte[] ByteAetherUlid() => _byteAetherUlid1.ToByteArray();
 
 	[Benchmark]
-	public byte[] ByteAetherUlid() => _superUlid.ToByteArray();
+	public byte[] NetUlid() => _netUlid1.ToByteArray();
 
 	[Benchmark]
-	public byte[] NetUlid() => _netUlid.ToByteArray();
+	public byte[] Ulid() => _ulid1.ToByteArray();
 
 	[Benchmark]
-	public byte[] Ulid() => _ulid.ToByteArray();
-
-	[Benchmark]
-	public byte[] NUlid() => _nulid.ToByteArray();
+	public byte[] NUlid() => _nulid1.ToByteArray();
 }
 
 [MemoryDiagnoser]
@@ -95,36 +88,28 @@ public class FromByteArray
 }
 
 [MemoryDiagnoser]
-public class ToString
+public class ToString : BenchmarkBase
 {
-	private static readonly byte[] _baseUlidBytes = ByteAether.Ulid.Ulid.New().ToByteArray();
-
-	private static readonly ByteAether.Ulid.Ulid _superUlid = ByteAether.Ulid.Ulid.New(_baseUlidBytes);
-	private static readonly NetUlid.Ulid _netUlid = new(_baseUlidBytes);
-	private static readonly System.Ulid _ulid = new(_baseUlidBytes);
-	private static readonly NUlid.Ulid _nulid = new(_baseUlidBytes);
-	private static readonly System.Guid _guid = new(_baseUlidBytes);
+	[Benchmark]
+	public string ByteAetherUlid() => _byteAetherUlid1.ToString();
 
 	[Benchmark]
-	public string ByteAetherUlid() => _superUlid.ToString();
+	public string NetUlid() => _netUlid1.ToString();
 
 	[Benchmark]
-	public string NetUlid() => _netUlid.ToString();
+	public string Ulid() => _ulid1.ToString();
 
 	[Benchmark]
-	public string Ulid() => _ulid.ToString();
+	public string NUlid() => _nulid1.ToString();
 
 	[Benchmark]
-	public string NUlid() => _nulid.ToString();
-
-	[Benchmark]
-	public string Guid() => _guid.ToString();
+	public string Guid() => _guid1.ToString();
 }
 
 [MemoryDiagnoser]
 public class FromString
 {
-	private static ByteAether.Ulid.Ulid _ulid = ByteAether.Ulid.Ulid.New();
+	private static readonly ByteAether.Ulid.Ulid _ulid = ByteAether.Ulid.Ulid.New();
 	private static readonly string _ulidString = _ulid.ToString();
 	private static readonly string _guidString = new System.Guid(_ulid.ToByteArray()).ToString();
 
@@ -145,26 +130,19 @@ public class FromString
 }
 
 [MemoryDiagnoser]
-public class ToGuid
+public class ToGuid : BenchmarkBase
 {
-	private static readonly byte[] _baseUlidBytes = ByteAether.Ulid.Ulid.New().ToByteArray();
-
-	private static readonly ByteAether.Ulid.Ulid _superUlid = ByteAether.Ulid.Ulid.New(_baseUlidBytes);
-	private static readonly NetUlid.Ulid _netUlid = new(_baseUlidBytes);
-	private static readonly System.Ulid _ulid = new(_baseUlidBytes);
-	private static readonly NUlid.Ulid _nulid = new(_baseUlidBytes);
+	[Benchmark]
+	public System.Guid ByteAetherUlid() => _byteAetherUlid1.ToGuid();
 
 	[Benchmark]
-	public System.Guid ByteAetherUlid() => _superUlid.ToGuid();
+	public System.Guid NetUlid() => new(_netUlid1.ToByteArray());
 
 	[Benchmark]
-	public System.Guid NetUlid() => new(_netUlid.ToByteArray());
+	public System.Guid Ulid() => _ulid1.ToGuid();
 
 	[Benchmark]
-	public System.Guid Ulid() => _ulid.ToGuid();
-
-	[Benchmark]
-	public System.Guid NUlid() => _nulid.ToGuid();
+	public System.Guid NUlid() => _nulid1.ToGuid();
 }
 
 [MemoryDiagnoser]
@@ -186,23 +164,8 @@ public class FromGuid
 }
 
 [MemoryDiagnoser]
-public class Equals
+public class Equals : BenchmarkBase
 {
-	private static readonly ByteAether.Ulid.Ulid _byteAetherUlid1 = ByteAether.Ulid.Ulid.New();
-	private static readonly ByteAether.Ulid.Ulid _byteAetherUlid2 = ByteAether.Ulid.Ulid.New();
-
-	private static readonly NetUlid.Ulid _netUlid1 = new(_byteAetherUlid1.ToByteArray());
-	private static readonly NetUlid.Ulid _netUlid2 = new(_byteAetherUlid2.ToByteArray());
-
-	private static readonly System.Ulid _ulid1 = new(_byteAetherUlid1.ToByteArray());
-	private static readonly System.Ulid _ulid2 = new(_byteAetherUlid2.ToByteArray());
-
-	private static readonly NUlid.Ulid _nulid1 = new(_byteAetherUlid1.ToByteArray());
-	private static readonly NUlid.Ulid _nulid2 = new(_byteAetherUlid2.ToByteArray());
-
-	private static readonly System.Guid _guid1 = new(_byteAetherUlid1.ToByteArray());
-	private static readonly System.Guid _guid2 = new(_byteAetherUlid2.ToByteArray());
-
 	[Benchmark]
 	public bool ByteAetherUlid() => _byteAetherUlid1.Equals(_byteAetherUlid2);
 
@@ -220,20 +183,8 @@ public class Equals
 }
 
 [MemoryDiagnoser]
-public class CompareTo
+public class CompareTo : BenchmarkBase
 {
-	private static readonly ByteAether.Ulid.Ulid _byteAetherUlid1 = ByteAether.Ulid.Ulid.New();
-	private static readonly ByteAether.Ulid.Ulid _byteAetherUlid2 = ByteAether.Ulid.Ulid.New();
-
-	private static readonly NetUlid.Ulid _netUlid1 = new(_byteAetherUlid1.ToByteArray());
-	private static readonly NetUlid.Ulid _netUlid2 = new(_byteAetherUlid2.ToByteArray());
-
-	private static readonly System.Ulid _ulid1 = new(_byteAetherUlid1.ToByteArray());
-	private static readonly System.Ulid _ulid2 = new(_byteAetherUlid2.ToByteArray());
-
-	private static readonly NUlid.Ulid _nulid1 = new(_byteAetherUlid1.ToByteArray());
-	private static readonly NUlid.Ulid _nulid2 = new(_byteAetherUlid2.ToByteArray());
-
 	[Benchmark]
 	public int ByteAetherUlid() => _byteAetherUlid1.CompareTo(_byteAetherUlid2);
 
@@ -248,28 +199,38 @@ public class CompareTo
 }
 
 [MemoryDiagnoser]
-public class GetHashCode
+public class GetHashCode : BenchmarkBase
 {
-	private static readonly byte[] _baseUlidBytes = ByteAether.Ulid.Ulid.New().ToByteArray();
-
-	private static readonly ByteAether.Ulid.Ulid _superUlid = ByteAether.Ulid.Ulid.New(_baseUlidBytes);
-	private static readonly NetUlid.Ulid _netUlid = new(_baseUlidBytes);
-	private static readonly System.Ulid _ulid = new(_baseUlidBytes);
-	private static readonly NUlid.Ulid _nulid = new(_baseUlidBytes);
-	private static readonly System.Guid _guid = new(_baseUlidBytes);
+	[Benchmark]
+	public int ByteAetherUlid() => _byteAetherUlid1.GetHashCode();
 
 	[Benchmark]
-	public int ByteAetherUlid() => _superUlid.GetHashCode();
+	public int NetUlid() => _netUlid1.GetHashCode();
 
 	[Benchmark]
-	public int NetUlid() => _netUlid.GetHashCode();
+	public int Ulid() => _ulid1.GetHashCode();
 
 	[Benchmark]
-	public int Ulid() => _ulid.GetHashCode();
+	public int NUlid() => _nulid1.GetHashCode();
 
 	[Benchmark]
-	public int NUlid() => _nulid.GetHashCode();
+	public int Guid() => _guid1.GetHashCode();
+}
 
-	[Benchmark]
-	public int Guid() => _guid.GetHashCode();
+public abstract class BenchmarkBase
+{
+	protected static readonly ByteAether.Ulid.Ulid _byteAetherUlid1 = ByteAether.Ulid.Ulid.New();
+	protected static readonly ByteAether.Ulid.Ulid _byteAetherUlid2 = ByteAether.Ulid.Ulid.New();
+
+	protected static readonly NetUlid.Ulid _netUlid1 = new(_byteAetherUlid1.ToByteArray());
+	protected static readonly NetUlid.Ulid _netUlid2 = new(_byteAetherUlid2.ToByteArray());
+
+	protected static readonly System.Ulid _ulid1 = new(_byteAetherUlid1.ToByteArray());
+	protected static readonly System.Ulid _ulid2 = new(_byteAetherUlid2.ToByteArray());
+
+	protected static readonly NUlid.Ulid _nulid1 = new(_byteAetherUlid1.ToByteArray());
+	protected static readonly NUlid.Ulid _nulid2 = new(_byteAetherUlid2.ToByteArray());
+
+	protected static readonly System.Guid _guid1 = new(_byteAetherUlid1.ToByteArray());
+	protected static readonly System.Guid _guid2 = new(_byteAetherUlid2.ToByteArray());
 }

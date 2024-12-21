@@ -5,7 +5,7 @@ using System.Globalization;
 namespace ByteAether.Ulid;
 
 /// <summary>
-/// A type converter for the <see cref="ByteAether.Ulid"/> type.
+/// A type converter for the <see cref="Ulid"/> type.
 /// </summary>
 public class UlidTypeConverter : TypeConverter
 {

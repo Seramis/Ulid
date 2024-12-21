@@ -18,7 +18,14 @@ public readonly partial struct Ulid
 #endif
 #endif
 {
-	private const byte _ulidStringLength = 26;
+	/// <summary>
+	/// The length of a ULID when encoded as a string in its canonical format.
+	/// </summary>
+	/// <remarks>
+	/// A ULID string consists of 26 characters, encoded using Crockford's Base32 encoding.
+	/// </remarks>
+	public const byte UlidStringLength = 26;
+
 	private static readonly char[] _base32Chars = "0123456789ABCDEFGHJKMNPQRSTVWXYZ".ToCharArray();
 	private static readonly byte[] _base32Bytes = Encoding.UTF8.GetBytes(_base32Chars);
 	private static readonly byte[] _inverseBase32 =
@@ -68,13 +75,13 @@ public readonly partial struct Ulid
 	public readonly string ToString(string? format = null, IFormatProvider? formatProvider = null)
 	{
 #if NETCOREAPP2_1_OR_GREATER
-		return string.Create(_ulidStringLength, this, (span, ulid) => ulid.WriteChars(span));
+		return string.Create(UlidStringLength, this, (span, ulid) => ulid.TryFill(span));
 #else
-		Span<char> span = stackalloc char[_ulidStringLength];
-		WriteChars(span);
+		Span<char> span = stackalloc char[UlidStringLength];
+		TryFill(span);
 		unsafe
 		{
-			return new string((char*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(span)), 0, _ulidStringLength);
+			return new string((char*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(span)), 0, UlidStringLength);
 		}
 #endif
 	}
@@ -86,7 +93,44 @@ public readonly partial struct Ulid
 	public static Ulid Parse(ReadOnlySpan<char> chars, IFormatProvider? provider = null)
 	{
 		// Sanity check.
-		if (chars.Length != _ulidStringLength)
+		if (chars.Length != UlidStringLength)
+		{
+			throw new FormatException();
+		}
+
+		// Decode.
+		Ulid ulid = default;
+		var ulidBytes = MemoryMarshal.CreateSpan(ref Unsafe.As<Ulid, byte>(ref ulid), _ulidSize);
+
+		ulidBytes[15] = (byte)((_inverseBase32[(uint)chars[24]] << 5) | _inverseBase32[(uint)chars[25]]);
+
+		ulidBytes[00] = (byte)((_inverseBase32[(uint)chars[0]] << 5) | _inverseBase32[(uint)chars[1]]);
+		ulidBytes[01] = (byte)((_inverseBase32[(uint)chars[2]] << 3) | (_inverseBase32[(uint)chars[3]] >> 2));
+		ulidBytes[02] = (byte)((_inverseBase32[(uint)chars[3]] << 6) | (_inverseBase32[(uint)chars[4]] << 1) | (_inverseBase32[(uint)chars[5]] >> 4));
+		ulidBytes[03] = (byte)((_inverseBase32[(uint)chars[5]] << 4) | (_inverseBase32[(uint)chars[6]] >> 1));
+		ulidBytes[04] = (byte)((_inverseBase32[(uint)chars[6]] << 7) | (_inverseBase32[(uint)chars[7]] << 2) | (_inverseBase32[(uint)chars[8]] >> 3));
+		ulidBytes[05] = (byte)((_inverseBase32[(uint)chars[8]] << 5) | _inverseBase32[(uint)chars[9]]);
+		ulidBytes[06] = (byte)((_inverseBase32[(uint)chars[10]] << 3) | (_inverseBase32[(uint)chars[11]] >> 2));
+		ulidBytes[07] = (byte)((_inverseBase32[(uint)chars[11]] << 6) | (_inverseBase32[(uint)chars[12]] << 1) | (_inverseBase32[(uint)chars[13]] >> 4));
+		ulidBytes[08] = (byte)((_inverseBase32[(uint)chars[13]] << 4) | (_inverseBase32[(uint)chars[14]] >> 1));
+		ulidBytes[09] = (byte)((_inverseBase32[(uint)chars[14]] << 7) | (_inverseBase32[(uint)chars[15]] << 2) | (_inverseBase32[(uint)chars[16]] >> 3));
+		ulidBytes[10] = (byte)((_inverseBase32[(uint)chars[16]] << 5) | _inverseBase32[(uint)chars[17]]);
+		ulidBytes[11] = (byte)((_inverseBase32[(uint)chars[18]] << 3) | (_inverseBase32[(uint)chars[19]] >> 2));
+		ulidBytes[12] = (byte)((_inverseBase32[(uint)chars[19]] << 6) | (_inverseBase32[(uint)chars[20]] << 1) | (_inverseBase32[(uint)chars[21]] >> 4));
+		ulidBytes[13] = (byte)((_inverseBase32[(uint)chars[21]] << 4) | (_inverseBase32[(uint)chars[22]] >> 1));
+		ulidBytes[14] = (byte)((_inverseBase32[(uint)chars[22]] << 7) | (_inverseBase32[(uint)chars[23]] << 2) | (_inverseBase32[(uint)chars[24]] >> 3));
+
+		return ulid;
+	}
+
+	/// <inheritdoc/>
+#if NET5_0_OR_GREATER
+	[SkipLocalsInit]
+#endif
+	public static Ulid Parse(ReadOnlySpan<byte> chars, IFormatProvider? provider = null)
+	{
+		// Sanity check.
+		if (chars.Length != UlidStringLength)
 		{
 			throw new FormatException();
 		}
@@ -123,6 +167,11 @@ public readonly partial struct Ulid
 
 	/// <inheritdoc/>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Ulid result)
+		=> TryParse(s.AsSpan(), provider, out result);
+
+	/// <inheritdoc/>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Ulid result)
 	{
 		try
@@ -139,16 +188,27 @@ public readonly partial struct Ulid
 
 	/// <inheritdoc/>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Ulid result)
-		=> TryParse(s.AsSpan(), provider, out result);
+	public static bool TryParse(ReadOnlySpan<byte> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Ulid result)
+	{
+		try
+		{
+			result = Parse(s);
+			return true;
+		}
+		catch
+		{
+			result = default;
+			return false;
+		}
+	}
 
 	/// <inheritdoc/>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public readonly bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+	public readonly bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider = null)
 	{
-		if (WriteChars(destination))
+		if (TryFill(destination))
 		{
-			charsWritten = _ulidStringLength;
+			charsWritten = UlidStringLength;
 			return true;
 		}
 
@@ -158,11 +218,11 @@ public readonly partial struct Ulid
 
 	/// <inheritdoc/>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public readonly bool TryFormat(Span<byte> destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+	public readonly bool TryFormat(Span<byte> destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider = null)
 	{
-		if (WriteBytes(destination))
+		if (TryFill(destination))
 		{
-			bytesWritten = _ulidStringLength;
+			bytesWritten = UlidStringLength;
 			return true;
 		}
 
@@ -170,9 +230,9 @@ public readonly partial struct Ulid
 		return false;
 	}
 
-	private readonly bool WriteChars(Span<char> span)
+	private readonly bool TryFill(Span<char> span)
 	{
-		if (span.Length < _ulidStringLength)
+		if (span.Length < UlidStringLength)
 		{
 			return false;
 		}
@@ -212,9 +272,9 @@ public readonly partial struct Ulid
 		return true;
 	}
 
-	private readonly bool WriteBytes(Span<byte> span)
+	private readonly bool TryFill(Span<byte> span)
 	{
-		if (span.Length < _ulidStringLength)
+		if (span.Length < UlidStringLength)
 		{
 			return false;
 		}

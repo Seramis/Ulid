@@ -1,46 +1,78 @@
 ﻿#if NETCOREAPP3_0_OR_GREATER
+using System.Buffers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace ByteAether.Ulid;
 
 /// <summary>
-/// A custom JSON converter for the <see cref="ByteAether.Ulid"/> type.
+/// A custom JSON converter for the <see cref="Ulid"/> type.
 /// </summary>
 public class UlidJsonConverter : JsonConverter<Ulid>
 {
-	/// <summary>
-	/// Reads and converts the JSON representation of the object.
-	/// </summary>
-	/// <param name="reader">The reader.</param>
-	/// <param name="typeToConvert">The type to convert.</param>
-	/// <param name="options">The serializer options.</param>
-	/// <returns>The converted <see cref="ByteAether.Ulid"/> object.</returns>
-	/// <exception cref="ArgumentException">Thrown when the JSON value is null.</exception>
-	/// <exception cref="JsonException">Thrown when the JSON value is not a valid ULID.</exception>
+	/// <inheritdoc/>
 	public override Ulid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 	{
-		var json = reader.GetString() ?? throw new ArgumentException($"The JSON value is null.", nameof(reader));
-
 		try
 		{
-			return Ulid.Parse(json);
+			if (reader.TokenType is not JsonTokenType.String and not JsonTokenType.PropertyName)
+			{
+				throw new JsonException("Expected string or property name");
+			}
+
+			if (reader.HasValueSequence)
+			{
+				var byteSequence = reader.ValueSequence;
+				if (byteSequence.Length != Ulid.UlidStringLength)
+				{
+					throw new JsonException($"Ulid invalid: length must be {Ulid.UlidStringLength}");
+				}
+
+				Span<byte> byteSpan = stackalloc byte[Ulid.UlidStringLength];
+				byteSequence.CopyTo(byteSpan);
+				Ulid.TryParse(byteSpan, null, out var ulid);
+				return ulid;
+			}
+			else
+			{
+				var byteSpan = reader.ValueSpan;
+				if (byteSpan.Length != Ulid.UlidStringLength)
+				{
+					throw new JsonException($"Ulid invalid: length must be {Ulid.UlidStringLength}");
+				}
+
+				Ulid.TryParse(byteSpan, null, out var ulid);
+				return ulid;
+			}
 		}
-		catch (FormatException ex)
+		catch (IndexOutOfRangeException ex)
 		{
-			throw new JsonException($"'{json}' is not a valid ULID.", ex);
+			throw new JsonException($"Ulid invalid: length must be {Ulid.UlidStringLength}", ex);
+		}
+		catch (OverflowException ex)
+		{
+			throw new JsonException("Ulid invalid: invalid character", ex);
 		}
 	}
 
-	/// <summary>
-	/// Writes the JSON representation of the object.
-	/// </summary>
-	/// <param name="writer">The writer.</param>
-	/// <param name="value">The value to write.</param>
-	/// <param name="options">The serializer options.</param>
-	public override void Write(Utf8JsonWriter writer, Ulid value, JsonSerializerOptions options)
+	/// <inheritdoc/>
+	public override void Write(Utf8JsonWriter writer, Ulid ulid, JsonSerializerOptions options)
 	{
-		writer.WriteStringValue(value.ToString());
+		Span<byte> ulidString = stackalloc byte[Ulid.UlidStringLength];
+		ulid.TryFormat(ulidString, out var _, []);
+		writer.WriteStringValue(ulidString);
 	}
+
+	/// <inheritdoc/>
+	public override void WriteAsPropertyName(Utf8JsonWriter writer, Ulid ulid, JsonSerializerOptions options)
+	{
+		Span<byte> ulidString = stackalloc byte[Ulid.UlidStringLength];
+		ulid.TryFormat(ulidString, out var _, []);
+		writer.WritePropertyName(ulidString);
+	}
+
+	/// <inheritdoc/>
+	public override Ulid ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+		=> Read(ref reader, typeToConvert, options);
 }
 #endif

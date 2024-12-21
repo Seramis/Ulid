@@ -76,4 +76,23 @@ public class UlidTests
 		Assert.Equal(26, ulidString.Length);
 		Assert.Equal(ulid, ulid2);
 	}
+
+	[Fact]
+	public void ToString_WrongLettersReplaced()
+	{
+		// Crockford's Base32 subtitution test
+		var inputChars = new char[] { 'O', 'o', 'I', 'i', 'L', 'l', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z' };
+		var outputChars = new char[] { '0', '0', '1', '1', '1', '1', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z' };
+
+		for (var i = 0; i < inputChars.Length; i++)
+		{
+			var inputString = $"2222222{inputChars[i]}222222222222222222";
+			var outputString = $"2222222{outputChars[i]}222222222222222222";
+
+			var ulid = Ulid.Parse(inputString);
+			var resultString = ulid.ToString();
+
+			Assert.Equal(outputString, resultString);
+		}
+	}
 }

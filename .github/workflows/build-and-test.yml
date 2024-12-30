@@ -19,17 +19,22 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: |
+            9.x
+            8.x
+            7.x
+            6.x
+            5.x
 
     - name: Restore dependencies
       run: dotnet restore src/ByteAether.Ulid.sln
 
     - name: Build
-      run: dotnet build --no-restore src/ByteAether.Ulid.sln
+      run: dotnet build --no-restore --configuration Release src/ByteAether.Ulid.sln
 
     - name: Run tests
       continue-on-error: true
-      run: dotnet test --no-build --verbosity normal --logger "trx" src/ByteAether.Ulid.sln
+      run: dotnet test --no-build --verbosity normal --logger "trx" --configuration Release src/ByteAether.Ulid.sln
 
     - name: Upload test results
       uses: actions/upload-artifact@v4

@@ -25,7 +25,7 @@
 	<PackageTags>ulid;identifier;unique-identifier;universal-identifier;lexicographically-sortable;id-generator;globally-unique;globally-unique-identifier;distributed-systems;database;guid;uuid;sortable;human-readable;monotonic;primary-key;base32;cross-platform</PackageTags>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
-	<PackageIcon>Logo.png</PackageIcon>
+	<PackageIcon>logo.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' ">

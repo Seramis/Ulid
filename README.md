@@ -1,9 +1,10 @@
-<h1><img alt="" src="Logo.png" height="48px" /> ULID</h1>
+# ![ULID from ByteAether](assets/header.png)
 
-*from **ByteAether***
-
-[![NuGet Version](https://img.shields.io/nuget/v/ByteAether.Ulid)](https://www.nuget.org/packages/ByteAether.Ulid/)
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ByteAether/Ulid/build-and-test.yml)](https://github.com/ByteAether/Ulid/actions/workflows/build-and-test.yml)
+[![License](https://img.shields.io/github/license/ByteAether/Ulid?logo=github&label=License)](https://github.com/ByteAether/Ulid/blob/main/LICENSE)
+[![NuGet Version](https://img.shields.io/nuget/v/ByteAether.Ulid?logo=nuget&label=Version)](https://www.nuget.org/packages/ByteAether.Ulid/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/ByteAether.Ulid?logo=nuget&label=Downloads)](https://www.nuget.org/packages/ByteAether.Ulid/)
+[![GitHub Build Status](https://img.shields.io/github/actions/workflow/status/ByteAether/Ulid/build-and-test.yml?logo=github&label=Build%20%26%20Test)](https://github.com/ByteAether/Ulid/actions/workflows/build-and-test.yml)
+[![GitHub Security](https://img.shields.io/github/actions/workflow/status/ByteAether/Ulid/codeql.yml?logo=github&label=Security%20Validation)](https://github.com/ByteAether/Ulid/actions/workflows/codeql.yml)
 
 A high-performance .NET implementation of ULIDs (Universally Unique Lexicographically Sortable Identifiers) that fully complies with the [official ULID specification](https://github.com/ulid/spec).
 
@@ -22,6 +23,8 @@ A high-performance .NET implementation of ULIDs (Universally Unique Lexicographi
 
 ## Introduction
 
+<img align="right" width="100px" src="assets/logo.png" />
+
 ULIDs are identifiers designed to be universally unique and lexicographically sortable, making them ideal for distributed systems and time-ordered data. Unlike GUIDs, ULIDs are both sortable and human-readable. This library provides a robust and fully compliant .NET implementation of ULIDs, addressing some limitations found in other implementations.
 
 Additionally, this implementation addresses a potential issue in the official specification where generating multiple ULIDs within the same millisecond can cause the "random" part of the ULID to overflow, leading to an overflow exception being thrown. To ensure dependability and guarantee the generation of unique ULIDs, this implementation allows overflow to increment the "timestamp" part of the ULID, thereby eliminating the possibility of randomly occuring exception.
@@ -32,21 +35,29 @@ For almost all systems in the world, both GUID and integer IDs should be abandon
 
 ## Features
 
+![.NET 9.0](https://img.shields.io/badge/.NET-9.0-brightgreen)
+![.NET 8.0](https://img.shields.io/badge/.NET-8.0-brightgreen)
+![.NET 7.0](https://img.shields.io/badge/.NET-7.0-brightgreen)
+![.NET 6.0](https://img.shields.io/badge/.NET-6.0-brightgreen)
+![.NET 5.0](https://img.shields.io/badge/.NET-5.0-yellow)
+![.NET Standard 2.1](https://img.shields.io/badge/.NET-Standard_2.1-yellow)
+
 - **Universally Unique**: Ensures global uniqueness across systems.
 - **Sortable**: Lexicographically ordered for time-based sorting.
 - **Fast and Efficient**: Optimized for high performance and low memory usage.
 - **Specification-Compliant**: Fully adheres to the ULID specification.
-- **Interoperable**: Includes conversion methods to and from GUIDs, Base32 strings, and byte arrays.
+- **Interoperable**: Includes conversion methods to and from GUIDs, [Crockford's Base32](https://www.crockford.com/base32.html) strings, and byte arrays.
 - **Error-Free Generation**: Prevents overflow exceptions by incrementing timestamps during random part overflow.
-
 
 ## Installation
 
-Install the package via NuGet:
+Install the latest stable package via NuGet:
 
 ```sh
 dotnet add package ByteAether.Ulid
 ```
+
+Use the `--version` option to specify a [preview version](https://www.nuget.org/packages/ByteAether.Ulid/absoluteLatest) to install.
 
 ## Usage
 
@@ -241,6 +252,7 @@ Much of this implementation is either based on or inspired by existing implement
   * [Ulid](https://github.com/Cysharp/Ulid)
   * [NUlid](https://github.com/RobThree/NUlid)
   * [Official ULID specification](https://github.com/ulid/spec)
+  * [Crockford's Base32](https://www.crockford.com/base32.html)
 
 ## Contributing
 

@@ -63,6 +63,7 @@ public class UlidJsonConverter : JsonConverter<Ulid>
 		writer.WriteStringValue(ulidString);
 	}
 
+#if NET6_0_OR_GREATER
 	/// <inheritdoc/>
 	public override void WriteAsPropertyName(Utf8JsonWriter writer, Ulid ulid, JsonSerializerOptions options)
 	{
@@ -74,5 +75,6 @@ public class UlidJsonConverter : JsonConverter<Ulid>
 	/// <inheritdoc/>
 	public override Ulid ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 		=> Read(ref reader, typeToConvert, options);
+#endif
 }
 #endif

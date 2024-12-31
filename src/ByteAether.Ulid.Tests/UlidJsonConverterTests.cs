@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿#if NETCOREAPP
+using System.Text.Json;
 
 namespace ByteAether.Ulid.Tests;
 
@@ -117,3 +118,5 @@ public class UlidJsonConverterTests
 		Assert.Equal("value", deserializedDictionary![ulid]);
 	}
 }
+
+#endif

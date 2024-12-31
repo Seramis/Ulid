@@ -37,11 +37,11 @@ For almost all systems in the world, both GUID and integer IDs should be abandon
 
 ![.NET 9.0](https://img.shields.io/badge/.NET-9.0-brightgreen)
 ![.NET 8.0](https://img.shields.io/badge/.NET-8.0-brightgreen)
-![.NET 7.0](https://img.shields.io/badge/.NET-7.0-brightgreen)
-![.NET 6.0](https://img.shields.io/badge/.NET-6.0-brightgreen)
+![.NET 7.0](https://img.shields.io/badge/.NET-7.0-green)
+![.NET 6.0](https://img.shields.io/badge/.NET-6.0-green)
 ![.NET 5.0](https://img.shields.io/badge/.NET-5.0-yellow)
 ![.NET Standard 2.1](https://img.shields.io/badge/.NET-Standard_2.1-yellow)
-![.NET Standard 2.0](https://img.shields.io/badge/.NET-Standard_2.0-yellow)
+![.NET Standard 2.0](https://img.shields.io/badge/.NET-Standard_2.0-green)
 
 - **Universally Unique**: Ensures global uniqueness across systems.
 - **Sortable**: Lexicographically ordered for time-based sorting.

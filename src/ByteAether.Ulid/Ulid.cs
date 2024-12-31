@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
-#if NETCOREAPP3_0_OR_GREATER
+#if NETCOREAPP
 using System.Text.Json.Serialization;
 #endif
 
@@ -16,7 +16,7 @@ namespace ByteAether.Ulid;
 /// A ULID is a 128-bit identifier that is sortable by time and consists of a timestamp and random components. 
 /// For more information, visit <see href="https://github.com/ByteAether/Ulid">the GitHub repository</see>.
 /// </remarks>
-#if NETCOREAPP3_0_OR_GREATER
+#if NETCOREAPP
 [JsonConverter(typeof(UlidJsonConverter))]
 #endif
 [TypeConverter(typeof(UlidTypeConverter))]
@@ -84,8 +84,13 @@ public readonly partial struct Ulid
 		{
 			var span = AsByteSpan();
 
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
 			var upper = BitConverter.ToUInt32(span[..4]);
 			var lower = BitConverter.ToUInt16(span[4..6]);
+#else
+			var upper = BitConverter.ToUInt32(span[..4].ToArray(), 0);
+			var lower = BitConverter.ToUInt16(span[4..6].ToArray(), 0);
+#endif
 
 			var time = BitConverter.IsLittleEndian
 				? BinaryPrimitives.ReverseEndianness(upper) + ((long)BinaryPrimitives.ReverseEndianness(lower) << 16)
@@ -105,8 +110,8 @@ public readonly partial struct Ulid
 	[SkipLocalsInit]
 #endif
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public ReadOnlySpan<byte> AsByteSpan()
-		=> MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<Ulid, byte>(ref Unsafe.AsRef(in this)), _ulidSize);
+	public unsafe ReadOnlySpan<byte> AsByteSpan()
+		=> new(Unsafe.AsPointer(ref Unsafe.AsRef(in this)), _ulidSize);
 
 	/// <summary>
 	/// Converts the ULID to a byte array.

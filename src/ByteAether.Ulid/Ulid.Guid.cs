@@ -1,10 +1,8 @@
 ﻿using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if NET6_0_OR_GREATER
+#if NETCOREAPP
 using System.Runtime.Intrinsics;
-#endif
-#if NETCOREAPP3_0_OR_GREATER
 using System.Runtime.Intrinsics.X86;
 #endif
 
@@ -76,7 +74,7 @@ public readonly partial struct Ulid
 #endif
 	public readonly Guid ToGuid()
 	{
-#if NET6_0_OR_GREATER
+#if NETCOREAPP
 		if (BitConverter.IsLittleEndian && _isVector128Supported)
 		{
 			var vector = Unsafe.As<Ulid, Vector128<byte>>(ref Unsafe.AsRef(in this));
@@ -127,7 +125,7 @@ public readonly partial struct Ulid
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static explicit operator Ulid(Guid guid) => New(guid);
 
-#if NET6_0_OR_GREATER
+#if NETCOREAPP
 	private static readonly bool _isVector128Supported =
 #if NET7_0_OR_GREATER
 		Vector128.IsHardwareAccelerated;

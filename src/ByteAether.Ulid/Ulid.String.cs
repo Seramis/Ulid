@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
+#if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP)
+using System.Runtime.InteropServices;
+#endif
 
 namespace ByteAether.Ulid;
 
@@ -71,10 +73,13 @@ public readonly partial struct Ulid
 	];
 
 	/// <inheritdoc/>
+#if NET5_0_OR_GREATER
+	[SkipLocalsInit]
+#endif
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public readonly string ToString(string? format = null, IFormatProvider? formatProvider = null)
 	{
-#if NETCOREAPP2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
 		return string.Create(UlidStringLength, this, (span, ulid) => ulid.TryFill(span));
 #else
 		Span<char> span = stackalloc char[UlidStringLength];
@@ -100,25 +105,29 @@ public readonly partial struct Ulid
 
 		// Decode.
 		Ulid ulid = default;
-		var ulidBytes = MemoryMarshal.CreateSpan(ref Unsafe.As<Ulid, byte>(ref ulid), _ulidSize);
 
-		ulidBytes[15] = (byte)((_inverseBase32[(uint)chars[24]] << 5) | _inverseBase32[(uint)chars[25]]);
+		unsafe
+		{
+			var ulidBytes = new Span<byte>(Unsafe.AsPointer(ref Unsafe.AsRef(in ulid)), _ulidSize);
 
-		ulidBytes[00] = (byte)((_inverseBase32[(uint)chars[0]] << 5) | _inverseBase32[(uint)chars[1]]);
-		ulidBytes[01] = (byte)((_inverseBase32[(uint)chars[2]] << 3) | (_inverseBase32[(uint)chars[3]] >> 2));
-		ulidBytes[02] = (byte)((_inverseBase32[(uint)chars[3]] << 6) | (_inverseBase32[(uint)chars[4]] << 1) | (_inverseBase32[(uint)chars[5]] >> 4));
-		ulidBytes[03] = (byte)((_inverseBase32[(uint)chars[5]] << 4) | (_inverseBase32[(uint)chars[6]] >> 1));
-		ulidBytes[04] = (byte)((_inverseBase32[(uint)chars[6]] << 7) | (_inverseBase32[(uint)chars[7]] << 2) | (_inverseBase32[(uint)chars[8]] >> 3));
-		ulidBytes[05] = (byte)((_inverseBase32[(uint)chars[8]] << 5) | _inverseBase32[(uint)chars[9]]);
-		ulidBytes[06] = (byte)((_inverseBase32[(uint)chars[10]] << 3) | (_inverseBase32[(uint)chars[11]] >> 2));
-		ulidBytes[07] = (byte)((_inverseBase32[(uint)chars[11]] << 6) | (_inverseBase32[(uint)chars[12]] << 1) | (_inverseBase32[(uint)chars[13]] >> 4));
-		ulidBytes[08] = (byte)((_inverseBase32[(uint)chars[13]] << 4) | (_inverseBase32[(uint)chars[14]] >> 1));
-		ulidBytes[09] = (byte)((_inverseBase32[(uint)chars[14]] << 7) | (_inverseBase32[(uint)chars[15]] << 2) | (_inverseBase32[(uint)chars[16]] >> 3));
-		ulidBytes[10] = (byte)((_inverseBase32[(uint)chars[16]] << 5) | _inverseBase32[(uint)chars[17]]);
-		ulidBytes[11] = (byte)((_inverseBase32[(uint)chars[18]] << 3) | (_inverseBase32[(uint)chars[19]] >> 2));
-		ulidBytes[12] = (byte)((_inverseBase32[(uint)chars[19]] << 6) | (_inverseBase32[(uint)chars[20]] << 1) | (_inverseBase32[(uint)chars[21]] >> 4));
-		ulidBytes[13] = (byte)((_inverseBase32[(uint)chars[21]] << 4) | (_inverseBase32[(uint)chars[22]] >> 1));
-		ulidBytes[14] = (byte)((_inverseBase32[(uint)chars[22]] << 7) | (_inverseBase32[(uint)chars[23]] << 2) | (_inverseBase32[(uint)chars[24]] >> 3));
+			ulidBytes[15] = (byte)((_inverseBase32[(uint)chars[24]] << 5) | _inverseBase32[(uint)chars[25]]);
+
+			ulidBytes[00] = (byte)((_inverseBase32[(uint)chars[0]] << 5) | _inverseBase32[(uint)chars[1]]);
+			ulidBytes[01] = (byte)((_inverseBase32[(uint)chars[2]] << 3) | (_inverseBase32[(uint)chars[3]] >> 2));
+			ulidBytes[02] = (byte)((_inverseBase32[(uint)chars[3]] << 6) | (_inverseBase32[(uint)chars[4]] << 1) | (_inverseBase32[(uint)chars[5]] >> 4));
+			ulidBytes[03] = (byte)((_inverseBase32[(uint)chars[5]] << 4) | (_inverseBase32[(uint)chars[6]] >> 1));
+			ulidBytes[04] = (byte)((_inverseBase32[(uint)chars[6]] << 7) | (_inverseBase32[(uint)chars[7]] << 2) | (_inverseBase32[(uint)chars[8]] >> 3));
+			ulidBytes[05] = (byte)((_inverseBase32[(uint)chars[8]] << 5) | _inverseBase32[(uint)chars[9]]);
+			ulidBytes[06] = (byte)((_inverseBase32[(uint)chars[10]] << 3) | (_inverseBase32[(uint)chars[11]] >> 2));
+			ulidBytes[07] = (byte)((_inverseBase32[(uint)chars[11]] << 6) | (_inverseBase32[(uint)chars[12]] << 1) | (_inverseBase32[(uint)chars[13]] >> 4));
+			ulidBytes[08] = (byte)((_inverseBase32[(uint)chars[13]] << 4) | (_inverseBase32[(uint)chars[14]] >> 1));
+			ulidBytes[09] = (byte)((_inverseBase32[(uint)chars[14]] << 7) | (_inverseBase32[(uint)chars[15]] << 2) | (_inverseBase32[(uint)chars[16]] >> 3));
+			ulidBytes[10] = (byte)((_inverseBase32[(uint)chars[16]] << 5) | _inverseBase32[(uint)chars[17]]);
+			ulidBytes[11] = (byte)((_inverseBase32[(uint)chars[18]] << 3) | (_inverseBase32[(uint)chars[19]] >> 2));
+			ulidBytes[12] = (byte)((_inverseBase32[(uint)chars[19]] << 6) | (_inverseBase32[(uint)chars[20]] << 1) | (_inverseBase32[(uint)chars[21]] >> 4));
+			ulidBytes[13] = (byte)((_inverseBase32[(uint)chars[21]] << 4) | (_inverseBase32[(uint)chars[22]] >> 1));
+			ulidBytes[14] = (byte)((_inverseBase32[(uint)chars[22]] << 7) | (_inverseBase32[(uint)chars[23]] << 2) | (_inverseBase32[(uint)chars[24]] >> 3));
+		}
 
 		return ulid;
 	}
@@ -137,25 +146,29 @@ public readonly partial struct Ulid
 
 		// Decode.
 		Ulid ulid = default;
-		var ulidBytes = MemoryMarshal.CreateSpan(ref Unsafe.As<Ulid, byte>(ref ulid), _ulidSize);
 
-		ulidBytes[15] = (byte)((_inverseBase32[(uint)chars[24]] << 5) | _inverseBase32[(uint)chars[25]]);
+		unsafe
+		{
+			var ulidBytes = new Span<byte>(Unsafe.AsPointer(ref Unsafe.AsRef(in ulid)), _ulidSize);
 
-		ulidBytes[00] = (byte)((_inverseBase32[(uint)chars[0]] << 5) | _inverseBase32[(uint)chars[1]]);
-		ulidBytes[01] = (byte)((_inverseBase32[(uint)chars[2]] << 3) | (_inverseBase32[(uint)chars[3]] >> 2));
-		ulidBytes[02] = (byte)((_inverseBase32[(uint)chars[3]] << 6) | (_inverseBase32[(uint)chars[4]] << 1) | (_inverseBase32[(uint)chars[5]] >> 4));
-		ulidBytes[03] = (byte)((_inverseBase32[(uint)chars[5]] << 4) | (_inverseBase32[(uint)chars[6]] >> 1));
-		ulidBytes[04] = (byte)((_inverseBase32[(uint)chars[6]] << 7) | (_inverseBase32[(uint)chars[7]] << 2) | (_inverseBase32[(uint)chars[8]] >> 3));
-		ulidBytes[05] = (byte)((_inverseBase32[(uint)chars[8]] << 5) | _inverseBase32[(uint)chars[9]]);
-		ulidBytes[06] = (byte)((_inverseBase32[(uint)chars[10]] << 3) | (_inverseBase32[(uint)chars[11]] >> 2));
-		ulidBytes[07] = (byte)((_inverseBase32[(uint)chars[11]] << 6) | (_inverseBase32[(uint)chars[12]] << 1) | (_inverseBase32[(uint)chars[13]] >> 4));
-		ulidBytes[08] = (byte)((_inverseBase32[(uint)chars[13]] << 4) | (_inverseBase32[(uint)chars[14]] >> 1));
-		ulidBytes[09] = (byte)((_inverseBase32[(uint)chars[14]] << 7) | (_inverseBase32[(uint)chars[15]] << 2) | (_inverseBase32[(uint)chars[16]] >> 3));
-		ulidBytes[10] = (byte)((_inverseBase32[(uint)chars[16]] << 5) | _inverseBase32[(uint)chars[17]]);
-		ulidBytes[11] = (byte)((_inverseBase32[(uint)chars[18]] << 3) | (_inverseBase32[(uint)chars[19]] >> 2));
-		ulidBytes[12] = (byte)((_inverseBase32[(uint)chars[19]] << 6) | (_inverseBase32[(uint)chars[20]] << 1) | (_inverseBase32[(uint)chars[21]] >> 4));
-		ulidBytes[13] = (byte)((_inverseBase32[(uint)chars[21]] << 4) | (_inverseBase32[(uint)chars[22]] >> 1));
-		ulidBytes[14] = (byte)((_inverseBase32[(uint)chars[22]] << 7) | (_inverseBase32[(uint)chars[23]] << 2) | (_inverseBase32[(uint)chars[24]] >> 3));
+			ulidBytes[15] = (byte)((_inverseBase32[(uint)chars[24]] << 5) | _inverseBase32[(uint)chars[25]]);
+
+			ulidBytes[00] = (byte)((_inverseBase32[(uint)chars[0]] << 5) | _inverseBase32[(uint)chars[1]]);
+			ulidBytes[01] = (byte)((_inverseBase32[(uint)chars[2]] << 3) | (_inverseBase32[(uint)chars[3]] >> 2));
+			ulidBytes[02] = (byte)((_inverseBase32[(uint)chars[3]] << 6) | (_inverseBase32[(uint)chars[4]] << 1) | (_inverseBase32[(uint)chars[5]] >> 4));
+			ulidBytes[03] = (byte)((_inverseBase32[(uint)chars[5]] << 4) | (_inverseBase32[(uint)chars[6]] >> 1));
+			ulidBytes[04] = (byte)((_inverseBase32[(uint)chars[6]] << 7) | (_inverseBase32[(uint)chars[7]] << 2) | (_inverseBase32[(uint)chars[8]] >> 3));
+			ulidBytes[05] = (byte)((_inverseBase32[(uint)chars[8]] << 5) | _inverseBase32[(uint)chars[9]]);
+			ulidBytes[06] = (byte)((_inverseBase32[(uint)chars[10]] << 3) | (_inverseBase32[(uint)chars[11]] >> 2));
+			ulidBytes[07] = (byte)((_inverseBase32[(uint)chars[11]] << 6) | (_inverseBase32[(uint)chars[12]] << 1) | (_inverseBase32[(uint)chars[13]] >> 4));
+			ulidBytes[08] = (byte)((_inverseBase32[(uint)chars[13]] << 4) | (_inverseBase32[(uint)chars[14]] >> 1));
+			ulidBytes[09] = (byte)((_inverseBase32[(uint)chars[14]] << 7) | (_inverseBase32[(uint)chars[15]] << 2) | (_inverseBase32[(uint)chars[16]] >> 3));
+			ulidBytes[10] = (byte)((_inverseBase32[(uint)chars[16]] << 5) | _inverseBase32[(uint)chars[17]]);
+			ulidBytes[11] = (byte)((_inverseBase32[(uint)chars[18]] << 3) | (_inverseBase32[(uint)chars[19]] >> 2));
+			ulidBytes[12] = (byte)((_inverseBase32[(uint)chars[19]] << 6) | (_inverseBase32[(uint)chars[20]] << 1) | (_inverseBase32[(uint)chars[21]] >> 4));
+			ulidBytes[13] = (byte)((_inverseBase32[(uint)chars[21]] << 4) | (_inverseBase32[(uint)chars[22]] >> 1));
+			ulidBytes[14] = (byte)((_inverseBase32[(uint)chars[22]] << 7) | (_inverseBase32[(uint)chars[23]] << 2) | (_inverseBase32[(uint)chars[24]] >> 3));
+		}
 
 		return ulid;
 	}

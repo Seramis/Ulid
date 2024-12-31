@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net9.0;net8.0;net7.0;net6.0;net5.0;netstandard2.1</TargetFrameworks>
+	<TargetFrameworks>net9.0;net8.0;net7.0;net6.0;net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
 	<LangVersion>Latest</LangVersion>
 	<OutputType>Library</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -18,7 +18,7 @@
 	<Company>ByteAether</Company>
 	<Description>A lightweight, high-performance library for generating and working with ULIDs (Universally Unique Lexicographically Sortable Identifiers) in .NET. Supports monotonic ULID generation, Base32 encoding, and cross-platform compatibility. Ideal for databases, distributed systems, and scenarios requiring unique, sortable, timestamped identifiers.</Description>
 	<PackageProjectUrl>https://github.com/ByteAether/Ulid</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/ByteAether/Ulid.git</RepositoryUrl>
+	<RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 	
 	<PackageId>ByteAether.Ulid</PackageId>
@@ -27,6 +27,11 @@
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageIcon>logo.png</PackageIcon>
   </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+  	<PackageReference Include="System.Memory" Version="4.6.0" />
+  	<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.0" />
+  </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' ">
 	<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.0" />

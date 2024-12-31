@@ -1,4 +1,4 @@
-﻿#if NETCOREAPP3_0_OR_GREATER
+﻿#if NETCOREAPP
 using System.Buffers;
 using System.Text.Json;
 using System.Text.Json.Serialization;

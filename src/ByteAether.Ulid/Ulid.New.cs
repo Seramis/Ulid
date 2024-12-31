@@ -68,10 +68,13 @@ public readonly partial struct Ulid
 	{
 		Ulid ulid = default;
 
-		var ulidBytes = MemoryMarshal.CreateSpan(ref Unsafe.As<Ulid, byte>(ref ulid), _ulidSize);
+		unsafe
+		{
+			var ulidBytes = new Span<byte>(Unsafe.AsPointer(ref Unsafe.AsRef(in ulid)), _ulidSize);
 
-		FillTime(ulidBytes, timestamp);
-		FillRandom(ulidBytes, isMonotonic);
+			FillTime(ulidBytes, timestamp);
+			FillRandom(ulidBytes, isMonotonic);
+		}
 
 		return ulid;
 	}
@@ -98,10 +101,13 @@ public readonly partial struct Ulid
 	{
 		Ulid ulid = default;
 
-		var ulidBytes = MemoryMarshal.CreateSpan(ref Unsafe.As<Ulid, byte>(ref ulid), _ulidSize);
+		unsafe
+		{
+			var ulidBytes = new Span<byte>(Unsafe.AsPointer(ref Unsafe.AsRef(in ulid)), _ulidSize);
 
-		FillTime(ulidBytes, timestamp);
-		random.CopyTo(ulidBytes[6..]);
+			FillTime(ulidBytes, timestamp);
+			random.CopyTo(ulidBytes[6..]);
+		}
 
 		return ulid;
 	}
@@ -148,7 +154,14 @@ public readonly partial struct Ulid
 	{
 		if (!isMonotonic)
 		{
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
 			RandomNumberGenerator.Fill(bytes[6..]);
+#else
+			var rng = RandomNumberGenerator.Create();
+			var random = new byte[10];
+			rng.GetBytes(random);
+			random.CopyTo(bytes[6..]);
+#endif
 			return;
 		}
 
@@ -172,7 +185,14 @@ public readonly partial struct Ulid
 			else
 			{
 				bytes[..6].CopyTo(lastUlidSpan);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
 				RandomNumberGenerator.Fill(lastUlidSpan[6..]);
+#else
+				var rng = RandomNumberGenerator.Create();
+				var random = new byte[10];
+				rng.GetBytes(random);
+				random.CopyTo(lastUlidSpan[6..]);
+#endif
 			}
 
 			_lastUlid.CopyTo(bytes);

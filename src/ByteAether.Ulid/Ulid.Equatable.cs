@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-#if NET6_0_OR_GREATER
+#if NETCOREAPP
 using System.Runtime.Intrinsics;
-#endif
-#if NETCOREAPP3_0_OR_GREATER
 using System.Runtime.Intrinsics.X86;
 #endif
 
@@ -62,7 +60,7 @@ public readonly partial struct Ulid : IEquatable<Ulid>
 			return vA == vB;
 		}
 #endif
-#if NET6_0_OR_GREATER
+#if NETCOREAPP
 		if (Sse2.IsSupported)
 		{
 			var vA = Unsafe.As<Ulid, Vector128<byte>>(ref Unsafe.AsRef(in left));

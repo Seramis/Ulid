@@ -23,7 +23,9 @@ public class UlidTests
 		var ulid1 = Ulid.New(dateTimeOffset, isMonotonic);
 		var ulid2 = Ulid.New(dateTimeOffset, isMonotonic);
 
+		Assert.Equal(dateTimeOffset.ToUnixTimeMilliseconds(), ulid1.Time.ToUnixTimeMilliseconds());
 		Assert.Equal(ulid1.Time, ulid2.Time);
+
 		Assert.NotEqual(ulid1.Random.ToArray(), ulid2.Random.ToArray());
 
 		Assert.NotEqual(ulid1, ulid2);

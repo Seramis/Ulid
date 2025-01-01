@@ -1,5 +1,4 @@
-﻿using System.Buffers.Binary;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
@@ -84,19 +83,15 @@ public readonly partial struct Ulid
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get
 		{
-			var span = AsByteSpan();
-
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-			var upper = BitConverter.ToUInt32(span[..4]);
-			var lower = BitConverter.ToUInt16(span[4..6]);
-#else
-			var upper = BitConverter.ToUInt32(span[..4].ToArray(), 0);
-			var lower = BitConverter.ToUInt16(span[4..6].ToArray(), 0);
-#endif
-
-			var time = BitConverter.IsLittleEndian
-				? BinaryPrimitives.ReverseEndianness(upper) + ((long)BinaryPrimitives.ReverseEndianness(lower) << 16)
-				: ((long)upper << 16) + lower;
+			// Combine the 6 bytes into a 48-bit timestamp (big-endian order)
+			var time =
+				((long)_t0 << 40) |
+				((long)_t1 << 32) |
+				((long)_t2 << 24) |
+				((long)_t3 << 16) |
+				((long)_t4 << 8) |
+				_t5
+			;
 
 			return DateTimeOffset.FromUnixTimeMilliseconds(time);
 		}

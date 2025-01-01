@@ -23,7 +23,9 @@ namespace ByteAether.Ulid;
 [StructLayout(LayoutKind.Explicit)]
 public readonly partial struct Ulid
 {
-	private const byte _ulidSize = 16;
+	private const byte _ulidSizeTime = 6;
+	private const byte _ulidSizeRandom = 10;
+	private const byte _ulidSize = _ulidSizeTime + _ulidSizeRandom;
 
 	[FieldOffset(0)] private readonly byte _t0;
 	[FieldOffset(1)] private readonly byte _t1;
@@ -57,7 +59,7 @@ public readonly partial struct Ulid
 	public ReadOnlySpan<byte> Random
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => AsByteSpan()[6..];
+		get => AsByteSpan()[_ulidSizeTime..];
 	}
 
 	/// <summary>
@@ -123,7 +125,7 @@ public readonly partial struct Ulid
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public byte[] ToByteArray()
 	{
-		var bytes = new byte[16];
+		var bytes = new byte[_ulidSize];
 		Unsafe.WriteUnaligned(ref bytes[0], this);
 		return bytes;
 	}

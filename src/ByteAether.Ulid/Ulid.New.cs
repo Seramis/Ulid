@@ -1,12 +1,16 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+#if NETSTANDARD2_0
+using System.Buffers;
+#endif
 
 namespace ByteAether.Ulid;
 
 public readonly partial struct Ulid
 {
 	private static readonly byte[] _lastUlid = new byte[_ulidSize];
+	private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 
 #if NET9_0_OR_GREATER
 	private static readonly Lock _lock = new();
@@ -106,7 +110,7 @@ public readonly partial struct Ulid
 			var ulidBytes = new Span<byte>(Unsafe.AsPointer(ref Unsafe.AsRef(in ulid)), _ulidSize);
 
 			FillTime(ulidBytes, timestamp);
-			random.CopyTo(ulidBytes[6..]);
+			random.CopyTo(ulidBytes[_ulidSizeTime..]);
 		}
 
 		return ulid;
@@ -155,12 +159,16 @@ public readonly partial struct Ulid
 		if (!isMonotonic)
 		{
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-			RandomNumberGenerator.Fill(bytes[6..]);
+			_rng.GetBytes(bytes[_ulidSizeTime..]);
 #else
-			var rng = RandomNumberGenerator.Create();
-			var random = new byte[10];
-			rng.GetBytes(random);
-			random.CopyTo(bytes[6..]);
+			// In NetStandard 2.0, RandomNumberGenerator.GetBytes() does not support Span<byte> overloads.
+			var random = ArrayPool<byte>.Shared.Rent(_ulidSizeRandom);
+
+			_rng.GetBytes(random, 0, _ulidSizeRandom);
+			new ReadOnlySpan<byte>(random, 0, _ulidSizeRandom).CopyTo(bytes[_ulidSizeTime..]);
+
+			Array.Clear(random, 0, _ulidSizeRandom);
+			ArrayPool<byte>.Shared.Return(random);
 #endif
 			return;
 		}
@@ -170,7 +178,7 @@ public readonly partial struct Ulid
 		lock (_lock)
 		{
 			// If the timestamp is the same or lesser than the last one, increment the last ULID by one
-			if (bytes[..6].SequenceCompareTo(lastUlidSpan[..6]) <= 0)
+			if (bytes[.._ulidSizeTime].SequenceCompareTo(lastUlidSpan[.._ulidSizeTime]) <= 0)
 			{
 				var i = _ulidSize;
 				while (i > 0)
@@ -184,15 +192,8 @@ public readonly partial struct Ulid
 			// Otherwise, generate a new ULID
 			else
 			{
-				bytes[..6].CopyTo(lastUlidSpan);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-				RandomNumberGenerator.Fill(lastUlidSpan[6..]);
-#else
-				var rng = RandomNumberGenerator.Create();
-				var random = new byte[10];
-				rng.GetBytes(random);
-				random.CopyTo(lastUlidSpan[6..]);
-#endif
+				bytes[.._ulidSizeTime].CopyTo(lastUlidSpan);
+				_rng.GetBytes(_lastUlid, _ulidSizeTime, _ulidSizeRandom);
 			}
 
 			_lastUlid.CopyTo(bytes);

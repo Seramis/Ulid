@@ -127,6 +127,8 @@ Tries to parse a ULID from a string in canonical format. Returns `true` if succe
 
 - `.Time`\
 Gets the timestamp component of the ULID as a `DateTimeOffset`.
+- `.TimeBytes`\
+Gets the time component of the ULID as a `ReadOnlySpan<byte>`.
 - `.Random`\
 Gets the random component of the ULID as a `ReadOnlySpan<byte>`.
 

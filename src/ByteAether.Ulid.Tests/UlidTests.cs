@@ -25,6 +25,7 @@ public class UlidTests
 
 		Assert.Equal(dateTimeOffset.ToUnixTimeMilliseconds(), ulid1.Time.ToUnixTimeMilliseconds());
 		Assert.Equal(ulid1.Time, ulid2.Time);
+		Assert.Equal(ulid1.TimeBytes.ToArray(), ulid2.TimeBytes.ToArray());
 
 		Assert.NotEqual(ulid1.Random.ToArray(), ulid2.Random.ToArray());
 
@@ -41,6 +42,7 @@ public class UlidTests
 		var ulid2 = Ulid.New(dateTimeOffset, random);
 
 		Assert.Equal(ulid1.Time, ulid2.Time);
+		Assert.Equal(ulid1.TimeBytes.ToArray(), ulid2.TimeBytes.ToArray());
 		Assert.Equal(ulid1.Random.ToArray(), ulid2.Random.ToArray());
 
 		Assert.Equal(ulid1, ulid2);

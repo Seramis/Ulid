@@ -26,17 +26,17 @@ public readonly partial struct Ulid
 	private const byte _ulidSizeRandom = 10;
 	private const byte _ulidSize = _ulidSizeTime + _ulidSizeRandom;
 
-	[FieldOffset(0)] private readonly byte _t0;
-	[FieldOffset(1)] private readonly byte _t1;
-	[FieldOffset(2)] private readonly byte _t2;
-	[FieldOffset(3)] private readonly byte _t3;
-	[FieldOffset(4)] private readonly byte _t4;
-	[FieldOffset(5)] private readonly byte _t5;
+	[FieldOffset(00)] private readonly byte _t0;
+	[FieldOffset(01)] private readonly byte _t1;
+	[FieldOffset(02)] private readonly byte _t2;
+	[FieldOffset(03)] private readonly byte _t3;
+	[FieldOffset(04)] private readonly byte _t4;
+	[FieldOffset(05)] private readonly byte _t5;
 
-	[FieldOffset(6)] private readonly byte _r0;
-	[FieldOffset(7)] private readonly byte _r1;
-	[FieldOffset(8)] private readonly byte _r2;
-	[FieldOffset(9)] private readonly byte _r3;
+	[FieldOffset(06)] private readonly byte _r0;
+	[FieldOffset(07)] private readonly byte _r1;
+	[FieldOffset(08)] private readonly byte _r2;
+	[FieldOffset(09)] private readonly byte _r3;
 	[FieldOffset(10)] private readonly byte _r4;
 	[FieldOffset(11)] private readonly byte _r5;
 	[FieldOffset(12)] private readonly byte _r6;
@@ -59,6 +59,22 @@ public readonly partial struct Ulid
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => AsByteSpan()[_ulidSizeTime..];
+	}
+
+	/// <summary>
+	/// Gets the time component of the ULID as a byte array.
+	/// </summary>
+	/// <remarks>
+	/// The time component consists of the first 6 bytes of the ULID and is generated during ULID creation.
+	/// </remarks>
+	/// <returns>
+	/// A byte array containing 6 time bytes that represent the time portion of the ULID.
+	/// </returns>
+	[IgnoreDataMember]
+	public ReadOnlySpan<byte> TimeBytes
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => AsByteSpan()[.._ulidSizeTime];
 	}
 
 	/// <summary>

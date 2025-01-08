@@ -10,113 +10,130 @@ public class UlidJsonConverterTests
 		public Ulid UlidProperty { get; set; }
 	}
 
-	private static JsonSerializerOptions _jsonOptions
-		=> new()
-		{
-			Converters = { new UlidJsonConverter() }
-		};
+	private static JsonSerializerOptions _jsonOptions => new()
+	{
+		Converters = { new UlidJsonConverter() }
+	};
 
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void Serialize_UlidToJsonString(bool withOptions)
+	public void Serialize_UlidToJsonString(bool useCustomOptions)
 	{
+		// Arrange
 		var ulid = Ulid.New();
-		var jsonString = JsonSerializer.Serialize(ulid, withOptions ? _jsonOptions : null);
+		var options = useCustomOptions ? _jsonOptions : null;
 
-		Assert.Equal($"\"{ulid.ToString()}\"", jsonString);
+		// Act
+		var jsonString = JsonSerializer.Serialize(ulid, options);
+
+		// Assert
+		Assert.Equal($"\"{ulid}\"", jsonString);
 	}
 
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void Deserialize_JsonStringToUlid(bool withOptions)
+	public void Deserialize_JsonStringToUlid(bool useCustomOptions)
 	{
+		// Arrange
 		var ulid = Ulid.New();
-		var jsonString = $"\"{ulid.ToString()}\"";
+		var jsonString = $"\"{ulid}\"";
+		var options = useCustomOptions ? _jsonOptions : null;
 
-		var deserializedUlid = JsonSerializer.Deserialize<Ulid>(jsonString, withOptions ? _jsonOptions : null);
+		// Act
+		var deserializedUlid = JsonSerializer.Deserialize<Ulid>(jsonString, options);
 
+		// Assert
 		Assert.Equal(ulid, deserializedUlid);
 	}
 
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void Deserialize_BadUlidString(bool withOptions)
+	public void Deserialize_BadUlidString_ThrowsJsonException(bool useCustomOptions)
 	{
+		// Arrange
 		var ulid = Ulid.New();
-		var jsonString = $"\"{ulid.ToString()[1..]}\"";
+		var invalidJsonString = $"\"{ulid.ToString()[1..]}\""; // Remove the first character to make it invalid
+		var options = useCustomOptions ? _jsonOptions : null;
 
-		try
-		{
-			var deserializedUlid = JsonSerializer.Deserialize<Ulid>(jsonString, withOptions ? _jsonOptions : null);
-			throw new Exception("Test should fail here: no exception were thrown");
-		}
-		catch (JsonException)
-		{
-			// This is success
-		}
-		catch (Exception e)
-		{
-			throw new Exception($"Test should fail here: Got exception {e}");
-		}
+		// Act & Assert
+		Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<Ulid>(invalidJsonString, options));
 	}
 
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void Serialize_DtoToJson(bool withOptions)
+	public void Serialize_DtoToJson(bool useCustomOptions)
 	{
+		// Arrange
 		var dto = new TestDto { UlidProperty = Ulid.New() };
-		var jsonString = $"{{\"UlidProperty\":\"{dto.UlidProperty.ToString()}\"}}";
+		var expectedJson = $"{{\"UlidProperty\":\"{dto.UlidProperty}\"}}";
+		var options = useCustomOptions ? _jsonOptions : null;
 
-		var result = JsonSerializer.Serialize(dto, withOptions ? _jsonOptions : null);
+		// Act
+		var resultJson = JsonSerializer.Serialize(dto, options);
 
-		Assert.Equal(jsonString, result);
+		// Assert
+		Assert.Equal(expectedJson, resultJson);
 	}
 
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void Deserialize_GoodJsonToDto(bool withOptions)
+	public void Deserialize_GoodJsonToDto(bool useCustomOptions)
 	{
+		// Arrange
 		var ulid = Ulid.New();
-		var jsonString = $"{{\"UlidProperty\": \"{ulid.ToString()}\"}}";
+		var jsonString = $"{{\"UlidProperty\":\"{ulid}\"}}";
+		var options = useCustomOptions ? _jsonOptions : null;
 
-		var result = JsonSerializer.Deserialize<TestDto>(jsonString, withOptions ? _jsonOptions : null);
+		// Act
+		var resultDto = JsonSerializer.Deserialize<TestDto>(jsonString, options);
 
-		Assert.Equal(ulid, result!.UlidProperty);
+		// Assert
+		Assert.NotNull(resultDto);
+		Assert.Equal(ulid, resultDto!.UlidProperty);
 	}
 
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void Serialize_UlidAsPropertyName(bool withOptions)
+	public void Serialize_UlidAsPropertyName(bool useCustomOptions)
 	{
+		// Arrange
 		var ulid = Ulid.New();
 		var dictionary = new Dictionary<Ulid, string>
 		{
 			{ ulid, "value" }
 		};
+		var options = useCustomOptions ? _jsonOptions : null;
 
-		var jsonString = JsonSerializer.Serialize(dictionary, withOptions ? _jsonOptions : null);
+		// Act
+		var jsonString = JsonSerializer.Serialize(dictionary, options);
 
-		Assert.Contains($"\"{ulid.ToString()}\":\"value\"", jsonString);
+		// Assert
+		Assert.Contains($"\"{ulid}\":\"value\"", jsonString);
 	}
 
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void Deserialize_UlidAsPropertyName(bool withOptions)
+	public void Deserialize_UlidAsPropertyName(bool useCustomOptions)
 	{
+		// Arrange
 		var ulid = Ulid.New();
-		var jsonString = $"{{\"{ulid.ToString()}\":\"value\"}}";
+		var jsonString = $"{{\"{ulid}\":\"value\"}}";
+		var options = useCustomOptions ? _jsonOptions : null;
 
-		var deserializedDictionary = JsonSerializer.Deserialize<Dictionary<Ulid, string>>(jsonString, withOptions ? _jsonOptions : null);
+		// Act
+		var deserializedDictionary = JsonSerializer.Deserialize<Dictionary<Ulid, string>>(jsonString, options);
 
-		Assert.Equal("value", deserializedDictionary![ulid]);
+		// Assert
+		Assert.NotNull(deserializedDictionary);
+		Assert.True(deserializedDictionary!.ContainsKey(ulid));
+		Assert.Equal("value", deserializedDictionary[ulid]);
 	}
 }
-
 #endif

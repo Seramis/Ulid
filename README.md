@@ -149,7 +149,7 @@ Converts the ULID to a canonical string representation. Format arguments are ign
 `==`, `!=`, `<`, `<=`, `>`, `>=`.
 - Implements standard comparison and equality methods:\
 `CompareTo`, `Equals`, `GetHashCode`.
-- Provides explicit operators to and from `Guid`.
+- Provides implicit operators to and from `Guid`.
 
 ## Integration with other libraries
 

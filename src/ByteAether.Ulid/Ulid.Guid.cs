@@ -110,20 +110,20 @@ public readonly partial struct Ulid
 	}
 
 	/// <summary>
-	/// Explicitly converts a ULID to a GUID.
+	/// Implicitly converts a ULID to a GUID.
 	/// </summary>
 	/// <param name="ulid">The ULID to convert.</param>
 	/// <returns>A GUID representing the ULID.</returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static explicit operator Guid(Ulid ulid) => ulid.ToGuid();
+	public static implicit operator Guid(Ulid ulid) => ulid.ToGuid();
 
 	/// <summary>
-	/// Explicitly converts a GUID to a ULID.
+	/// Implicitly converts a GUID to a ULID.
 	/// </summary>
 	/// <param name="guid">The GUID to convert.</param>
 	/// <returns>A ULID representing the GUID.</returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static explicit operator Ulid(Guid guid) => New(guid);
+	public static implicit operator Ulid(Guid guid) => New(guid);
 
 #if NETCOREAPP
 	private static readonly bool _isVector128Supported =

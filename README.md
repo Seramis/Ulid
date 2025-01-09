@@ -15,7 +15,7 @@ A high-performance .NET implementation of ULIDs (Universally Unique Lexicographi
 - [Installation](#installation)
 - [Usage](#usage)
 - [API](#api)
-- [Integration with other libraries](#integration-with-other-libraries)
+- [Integration with Other Libraries](#integration-with-other-libraries)
 - [Benchmarking](#benchmarking)
 - [Prior Art](#prior-art)
 - [Contributing](#contributing)
@@ -157,9 +157,171 @@ Converts the ULID to a canonical string representation. Format arguments are ign
 
 Supports seamless integration as a route or query parameter with built-in `TypeConverter`.
 
-### System.Text.Json
+### System.Text.Json (.NET 5.0+)
 
 Includes a `JsonConverter` for easy serialization and deserialization.
+
+### EF Core Integration
+
+To use ULIDs as primary keys or properties in Entity Framework Core, you can create a custom **ValueConverter** to handle the conversion between `Ulid` and `byte[]`. Here's how to do it:
+
+#### 1. Create a custom `ValueConverter` to convert `Ulid` to `byte[]` and vice versa:
+
+```csharp
+public class UlidToBytesConverter : ValueConverter<Ulid, byte[]>
+{
+	private static readonly ConverterMappingHints DefaultHints = new(size: 16);
+
+	public UlidToBytesConverter() : this(defaultHints) { }
+
+	public UlidToBytesConverter(ConverterMappingHints? mappingHints = null)
+		: base(
+			convertToProviderExpression: x => x.ToByteArray(),
+			convertFromProviderExpression: x => Ulid.New(x),
+			mappingHints: defaultHints.With(mappingHints)
+		)
+	{ }
+}
+```
+
+#### 2. Register the Converter in OnModelCreating
+
+Once the converter is created, you need to register it in your `DbContext`'s `OnModelCreating` method to apply it to `Ulid` properties:
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+	// ...
+	configurationBuilder
+		.Properties<Ulid>()
+		.HaveConversion<UlidToBytesConverter>();
+	// ...
+}
+```
+
+### Dapper Integration
+To use ULIDs with Dapper, you can create a custom **TypeHandler** to convert between `Ulid` and `byte[]`. Here's how to set it up:
+
+#### 1. Create the ULID Type Handler
+
+```csharp
+using Dapper;
+using System.Data;
+
+public class UlidTypeHandler : SqlMapper.TypeHandler<Ulid>
+{
+    public override void SetValue(IDbDataParameter parameter, Ulid value)
+    {
+        parameter.Value = value.ToByteArray();
+    }
+
+    public override Ulid Parse(object value)
+    {
+        return Ulid.New((byte[])value);
+    }
+}
+```
+
+#### 2. Register the Type Handler
+After creating the `UlidTypeHandler`, you need to register it with Dapper. You can do this during application startup (e.g., in the `Main` method or `ConfigureServices` for ASP.NET Core).
+
+```csharp
+Dapper.SqlMapper.AddTypeHandler(new UlidTypeHandler());
+```
+
+### MessagePack Integration
+To use ULIDs with **MessagePack**, you can create a custom **MessagePackResolver** to handle the serialization and deserialization of `Ulid` as `byte[]`. Here's how to set it up:
+
+#### 1. Create the Custom Formatter
+
+First, create a custom formatter for `Ulid` to handle its conversion to and from `byte[]`:
+
+```csharp
+using MessagePack;
+using MessagePack.Formatters;
+
+public class UlidFormatter : IMessagePackFormatter<Ulid>
+{
+    public Ulid Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+    {
+        var bytes = reader.ReadByteArray();
+        return Ulid.New(bytes);
+    }
+
+    public void Serialize(ref MessagePackWriter writer, Ulid value, MessagePackSerializerOptions options)
+    {
+        writer.Write(value.ToByteArray());
+    }
+}
+```
+
+#### 2. Register the Formatter
+
+Once the `UlidFormatter` is created, you need to register it with the `MessagePackSerializer` to handle the `Ulid` type.
+
+```csharp
+MessagePack.Resolvers.CompositeResolver.Register(
+    new IMessagePackFormatter[] { new UlidFormatter() },
+    MessagePack.Resolvers.StandardResolver.GetFormatterWithVerify<Ulid>()
+);
+```
+
+Alternatively, you can register the formatter globally when configuring MessagePack options:
+
+```csharp
+MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions
+    .WithResolver(MessagePack.Resolvers.CompositeResolver.Create(
+        new IMessagePackFormatter[] { new UlidFormatter() },
+        MessagePack.Resolvers.StandardResolver.Instance
+    ));
+```
+
+### Newtonsoft.Json Integration
+
+To use ULIDs with **Newtonsoft.Json**, you need to create a custom **JsonConverter** to handle the serialization and deserialization of ULID values. Here's how to set it up:
+
+#### 1. Create the Custom JsonConverter
+
+First, create a custom `JsonConverter` for `Ulid` to serialize and deserialize it as a `string`:
+
+```csharp
+using Newtonsoft.Json;
+
+public class UlidJsonConverter : JsonConverter<Ulid>
+{
+    public override Ulid ReadJson(JsonReader reader, Type objectType, Ulid existingValue, bool hasExistingValue, JsonSerializer serializer)
+    {
+        var value = (string)reader.Value;
+        return Ulid.Parse(value);
+    }
+
+    public override void WriteJson(JsonWriter writer, Ulid value, JsonSerializer serializer)
+    {
+        writer.WriteValue(value.ToString());
+    }
+}
+```
+
+#### 2. Register the JsonConverter
+
+Once the `UlidJsonConverter` is created, you need to register it with **Newtonsoft.Json** to handle `Ulid` serialization and deserialization. You can register the converter globally when configuring your JSON settings:
+
+```csharp
+JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+{
+    Converters = new List<JsonConverter> { new UlidJsonConverter() }
+};
+```
+
+Alternatively, you can specify the converter explicitly in individual serialization or deserialization calls:
+
+```csharp
+var settings = new JsonSerializerSettings();
+settings.Converters.Add(new UlidJsonConverter());
+
+var json = JsonConvert.SerializeObject(myObject, settings);
+var deserializedObject = JsonConvert.DeserializeObject<MyObject>(json, settings);
+```
 
 ## Benchmarking
 To ensure the performance and efficiency of this ULID implementation, benchmarking was conducted using [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNet).

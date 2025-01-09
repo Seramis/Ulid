@@ -23,7 +23,7 @@
 	
 	<PackageId>ByteAether.Ulid</PackageId>
 	<PackageTags>ulid;identifier;unique-identifier;universal-identifier;lexicographically-sortable;id-generator;globally-unique;globally-unique-identifier;distributed-systems;database;guid;uuid;sortable;human-readable;monotonic;primary-key;base32;cross-platform</PackageTags>
-	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<PackageReadmeFile>PACKAGE.md</PackageReadmeFile>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageIcon>logo.png</PackageIcon>
   </PropertyGroup>
@@ -42,7 +42,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\..\README.md">
+    <None Include="PACKAGE.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

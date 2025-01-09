@@ -151,12 +151,14 @@ Converts the ULID to a canonical string representation. Format arguments are ign
 `CompareTo`, `Equals`, `GetHashCode`.
 - Provides implicit operators to and from `Guid`.
 
-## Integration with other libraries
+## Integration with Other Libraries
 
 ### ASP.NET Core
+
 Supports seamless integration as a route or query parameter with built-in `TypeConverter`.
 
 ### System.Text.Json
+
 Includes a `JsonConverter` for easy serialization and deserialization.
 
 ## Benchmarking
@@ -249,7 +251,7 @@ As such, it can be concluded that this implementation is either the fastest or v
 
 ## Prior Art
 
-Much of this implementation is either based on or inspired by existing implementations. This library is standing on the shoulders of giants.
+Much of this implementation is either based on or inspired by existing works. This library is standing on the shoulders of giants.
 
   * [NetUlid](https://github.com/ultimicro/netulid)
   * [Ulid](https://github.com/Cysharp/Ulid)

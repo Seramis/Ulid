@@ -78,4 +78,15 @@ public class UlidEquatableTests
 		// Act & Assert
 		Assert.False(ulid.Equals(wrongObject));
 	}
+
+	[Fact]
+	public void Equals_SameAsObject_ShouldReturnTrue()
+	{
+		// Arrange
+		var ulid1 = Ulid.New();
+		var ulid2 = ulid1;
+
+		// Act & Assert
+		Assert.True(ulid1.Equals((object)ulid2));
+	}
 }

@@ -2,7 +2,7 @@
 
 namespace ByteAether.Ulid.Tests;
 
-public class UlidConverterTests
+public class UlidTypeConverterTests
 {
 	private readonly TypeConverter _ulidTypeDescriptor = TypeDescriptor.GetConverter(typeof(Ulid));
 
@@ -19,6 +19,16 @@ public class UlidConverterTests
 		Assert.True(result, $"TypeConverter should support converting from {type}");
 	}
 
+	[Fact]
+	public void CanConvertFrom_ShouldReturnFalseForUnsupportedType()
+	{
+		// Act
+		var result = _ulidTypeDescriptor.CanConvertFrom(typeof(object));
+
+		// Assert
+		Assert.False(result, $"TypeConverter should not support converting from {typeof(object)}");
+	}
+
 	[Theory]
 	[InlineData(typeof(string))]
 	[InlineData(typeof(byte[]))]
@@ -30,6 +40,16 @@ public class UlidConverterTests
 
 		// Assert
 		Assert.True(result, $"TypeConverter should support converting to {type}");
+	}
+
+	[Fact]
+	public void CanConvertTo_ShouldReturnFalseForUnsupportedType()
+	{
+		// Act
+		var result = _ulidTypeDescriptor.CanConvertTo(typeof(object));
+
+		// Assert
+		Assert.False(result, $"TypeConverter should not support converting to {typeof(object)}");
 	}
 
 	[Fact]

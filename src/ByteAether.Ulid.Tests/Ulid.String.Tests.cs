@@ -70,7 +70,7 @@ public class UlidStringTests
 	[Theory]
 	[InlineData(0)]
 	[InlineData(1)]
-	public void TryFormat_ShouldFormatCorrectly(int extraBytesOnBuffer)
+	public void TryFormat_Chars_ShouldFormatCorrectly(int extraBytesOnBuffer)
 	{
 		// Arrange
 		var ulid = Ulid.Parse(_goodUlidString);
@@ -86,11 +86,44 @@ public class UlidStringTests
 	}
 
 	[Fact]
-	public void TryFormat_WithInsufficientBuffer_ShouldReturnFalse()
+	public void TryFormat_CharsWithInsufficientBuffer_ShouldReturnFalse()
 	{
 		// Arrange
 		var ulid = Ulid.Parse(_goodUlidString);
 		Span<char> buffer = stackalloc char[Ulid.UlidStringLength - 1]; // Insufficient buffer size
+
+		// Act
+		var success = ulid.TryFormat(buffer, out var charsWritten, []);
+
+		// Assert
+		Assert.False(success);
+		Assert.Equal(0, charsWritten);
+	}
+
+	[Theory]
+	[InlineData(0)]
+	[InlineData(1)]
+	public void TryFormat_Bytes_ShouldFormatCorrectly(int extraBytesOnBuffer)
+	{
+		// Arrange
+		var ulid = Ulid.Parse(_goodUlidString);
+		Span<byte> buffer = stackalloc byte[Ulid.UlidStringLength + extraBytesOnBuffer];
+
+		// Act
+		var success = ulid.TryFormat(buffer, out var charsWritten, []);
+
+		// Assert
+		Assert.True(success);
+		Assert.Equal(Ulid.UlidStringLength, charsWritten);
+		Assert.Equal(Encoding.UTF8.GetBytes(_goodUlidString), buffer.Slice(0, Ulid.UlidStringLength).ToArray());
+	}
+
+	[Fact]
+	public void TryFormat_BytesWithInsufficientBuffer_ShouldReturnFalse()
+	{
+		// Arrange
+		var ulid = Ulid.Parse(_goodUlidString);
+		Span<byte> buffer = stackalloc byte[Ulid.UlidStringLength - 1]; // Insufficient buffer size
 
 		// Act
 		var success = ulid.TryFormat(buffer, out var charsWritten, []);

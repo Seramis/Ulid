@@ -112,6 +112,15 @@ Creates a ULID from an existing byte array.
 - `Ulid.New(Guid guid)`\
 Create from existing `Guid`.
 
+### Checking validity
+
+- `Ulid.IsValid(string ulidString)`\
+Validates if the given string is a valid ULID.
+- `Ulid.IsValid(ReadOnlySpan<char> ulidString)`\
+Validates if the given span of characters is a valid ULID.
+- `Ulid.IsValid(ReadOnlySpan<byte> ulidBytes)`\
+Validates if the given byte array represents a valid ULID.
+
 ### Parsing
 
 - `Ulid.Parse(ReadOnlySpan<char> chars, IFormatProvider? provider = null)`\

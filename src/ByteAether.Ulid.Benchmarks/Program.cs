@@ -17,7 +17,9 @@ BenchmarkRunner.Run(
 	benchamarkConfig
 );
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CA1822 // Benchmark methods can not be static
+#pragma warning disable CA1050 // Declare types in namespaces
 
 [MemoryDiagnoser]
 public class Generate

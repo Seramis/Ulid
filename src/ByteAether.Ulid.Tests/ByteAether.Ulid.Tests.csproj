@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;net472</TargetFrameworks>
 	<LangVersion>Latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -11,6 +10,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
 	<UseDataCollector />
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+  	<TargetFrameworks>net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+  	<TargetFrameworks>net9.0;net8.0;net7.0;net6.0;net472</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

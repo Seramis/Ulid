@@ -36,9 +36,9 @@ jobs:
     - name: Build
       run: dotnet build --no-restore --configuration Release src/ByteAether.Ulid.sln
 
-    - name: Run tests excluding .NET Framework 4.7.2
+    - name: Run tests
       continue-on-error: true
-      run: dotnet test --no-build --verbosity normal --logger "trx" --configuration Release src/ByteAether.Ulid.sln --filter "TargetFramework!=net472"
+      run: dotnet test --no-build --verbosity normal --logger "trx" --configuration Release src/ByteAether.Ulid.sln
 
     - name: Upload test results
       uses: actions/upload-artifact@v4

@@ -112,7 +112,7 @@ Creates a ULID from an existing byte array.
 - `Ulid.New(Guid guid)`\
 Create from existing `Guid`.
 
-### Checking validity
+### Checking Validity
 
 - `Ulid.IsValid(string ulidString)`\
 Validates if the given string is a valid ULID.
@@ -152,7 +152,7 @@ Converts the ULID to a `Guid`.
 - `.ToString(string? format = null, IFormatProvider? formatProvider = null)`\
 Converts the ULID to a canonical string representation. Format arguments are ignored.
 
-### Comparison operators
+### Comparison Operators
 
 - Supports all comparison operators:\
 `==`, `!=`, `<`, `<=`, `>`, `>=`.

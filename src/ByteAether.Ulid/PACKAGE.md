@@ -83,6 +83,15 @@ Creates a ULID from an existing byte array.
 - `Ulid.New(Guid guid)`\
 Create from existing `Guid`.
 
+### Checking Validity
+
+- `Ulid.IsValid(string ulidString)`\
+Validates if the given string is a valid ULID.
+- `Ulid.IsValid(ReadOnlySpan<char> ulidString)`\
+Validates if the given span of characters is a valid ULID.
+- `Ulid.IsValid(ReadOnlySpan<byte> ulidBytes)`\
+Validates if the given byte array represents a valid ULID.
+
 ### Parsing
 
 - `Ulid.Parse(ReadOnlySpan<char> chars, IFormatProvider? provider = null)`\
@@ -114,7 +123,7 @@ Converts the ULID to a `Guid`.
 - `.ToString(string? format = null, IFormatProvider? formatProvider = null)`\
 Converts the ULID to a canonical string representation. Format arguments are ignored.
 
-### Comparison operators
+### Comparison Operators
 
 - Supports all comparison operators:\
 `==`, `!=`, `<`, `<=`, `>`, `>=`.
@@ -131,6 +140,10 @@ Supports seamless integration as a route or query parameter with built-in `TypeC
 ### System.Text.Json
 
 Includes a `JsonConverter` for easy serialization and deserialization.
+
+### Other Libraries
+
+Check out [README in GitHub repository](https://github.com/ByteAether/Ulid/blob/main/README.md) for examples to integrate with Entity Framework Core, Dapper, MessagePack and Newtonsoft.Json.
 
 ## Prior Art
 

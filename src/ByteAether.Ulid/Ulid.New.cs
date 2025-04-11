@@ -167,8 +167,7 @@ public readonly partial struct Ulid
 			_rng.GetBytes(random, 0, _ulidSizeRandom);
 			new ReadOnlySpan<byte>(random, 0, _ulidSizeRandom).CopyTo(bytes[_ulidSizeTime..]);
 
-			Array.Clear(random, 0, _ulidSizeRandom);
-			ArrayPool<byte>.Shared.Return(random);
+			ArrayPool<byte>.Shared.Return(random, true);
 #endif
 			return;
 		}

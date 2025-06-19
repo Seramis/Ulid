@@ -195,12 +195,12 @@ public class UlidToBytesConverter : ValueConverter<Ulid, byte[]>
 }
 ```
 
-#### 2. Register the Converter in OnModelCreating
+#### 2. Register the Converter in ConfigureConventions
 
-Once the converter is created, you need to register it in your `DbContext`'s `OnModelCreating` method to apply it to `Ulid` properties:
+Once the converter is created, you need to register it in your `DbContext`'s `ConfigureConventions` virtual method to apply it to `Ulid` properties:
 
 ```csharp
-protected override void OnModelCreating(ModelBuilder modelBuilder)
+protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
 {
 	// ...
 	configurationBuilder

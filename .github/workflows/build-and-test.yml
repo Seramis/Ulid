@@ -2,8 +2,6 @@ name: Build and Test
 
 on:
   push:
-    branches:
-      - main
     paths:
       - src/**
   pull_request:
@@ -11,6 +9,12 @@ on:
       - main
     paths:
       - src/**
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch name to run the pipeline against'
+        required: true
+        default: 'main'
 
 jobs:
   build:
@@ -19,6 +23,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch }}
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4

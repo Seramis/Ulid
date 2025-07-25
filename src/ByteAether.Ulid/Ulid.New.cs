@@ -1,26 +1,97 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-#if NETSTANDARD2_0
-using System.Buffers;
-#endif
 
 namespace ByteAether.Ulid;
 
 public readonly partial struct Ulid
 {
 	/// <summary>
-	/// Whether <see cref="Ulid"/>s should be generated in a monotonic manner by default.<br />
-	/// Initial value is set to <c>true</c>.<br/>
-	/// <b>This setting applies globally without any scoping.</b>
+	/// Defines the monotonicity behavior for ULID generation.
 	/// </summary>
 	/// <remarks>
-	/// When set to <c>true</c> (default), <see cref="Ulid"/>s generated without explicitly specifying monotonicity
-	/// will ensure that they are monotonically increasing.<br />
-	/// When set to <c>false</c>, <see cref="Ulid"/>s generated without explicitly specifying monotonicity will be
-	/// generated with random <see cref="Random" /> value.
+	/// The <see cref="Monotonicity"/> enum provides various options to configure
+	/// the generation of ULIDs with respect to their monotonic properties.
+	/// These options determine how the ULID sequence behaves in scenarios
+	/// where time does not progress or progresses non-linearly.
 	/// </remarks>
-	public static bool DefaultIsMonotonic { get; set; } = true;
+	public enum Monotonicity
+	{
+		/// <summary>
+		/// Indicates that ULIDs are generated in a completely non-monotonic manner.
+		/// </summary>
+		/// <remarks>
+		/// When <see cref="Monotonicity.NonMonotonic"/> is used, ULIDs are created
+		/// without any monotonic guarantees. The random component of the ULID is
+		/// entirely random, and the sequence does not ensure order or incrementality.
+		/// This is the default behavior when monotonicity settings are not explicitly defined.
+		/// </remarks>
+		NonMonotonic = -1,
+
+		/// <summary>
+		/// Indicates that ULIDs are generated with a strictly monotonic increment in the random component.
+		/// </summary>
+		/// <remarks>
+		/// When <see cref="Monotonicity.MonotonicIncrement"/> is used, the random portion of the ULID is
+		/// adjusted to ensure strict monotonic progression. This guarantees that the sequence of generated
+		/// ULIDs is always ordered and incremental, making it suitable for scenarios where strict ordering
+		/// is required without introducing additional randomness.
+		/// </remarks>
+		MonotonicIncrement = 0,
+
+		/// <summary>
+		/// Generates ULIDs with monotonicity by adding a random 8-bit value to the existing random component.
+		/// </summary>
+		/// <remarks>
+		/// When <see cref="Monotonicity.MonotonicRandom1Byte"/> is used, a random value between 1 and 256
+		/// is added to the existing random component. This addition may cause carries across all bytes of
+		/// the random component, ensuring the resulting ULID is greater than the previous one while
+		/// maintaining a degree of randomness in the increment.
+		/// </remarks>
+		MonotonicRandom1Byte = 1,
+
+		/// <summary>
+		/// Generates ULIDs with monotonicity by adding a random 16-bit value to the existing random component.
+		/// </summary>
+		/// <remarks>
+		/// When <see cref="Monotonicity.MonotonicRandom2Byte"/> is used, a random value between 1 and 65 536
+		/// is added to the existing random component. This addition may cause carries across all bytes of
+		/// the random component, ensuring the resulting ULID is greater than the previous one while
+		/// providing a larger range of possible increments.
+		/// </remarks>
+		MonotonicRandom2Byte = 2,
+
+		/// <summary>
+		/// Generates ULIDs with monotonicity by adding a random 24-bit value to the existing random component.
+		/// </summary>
+		/// <remarks>
+		/// When <see cref="Monotonicity.MonotonicRandom3Byte"/> is used, a random value between 1 and 16 777 216
+		/// is added to the existing random component. This addition may cause carries across all bytes of
+		/// the random component, ensuring the resulting ULID is greater than the previous one while
+		/// providing a significantly larger range of possible increments.
+		/// </remarks>
+		MonotonicRandom3Byte = 3,
+
+		/// <summary>
+		/// Generates ULIDs with monotonicity by adding a random 32-bit value to the existing random component.
+		/// </summary>
+		/// <remarks>
+		/// When <see cref="Monotonicity.MonotonicRandom4Byte"/> is used, a random value between 1 and 4 294 967 296
+		/// is added to the existing random component. This addition may cause carries across all bytes of
+		/// the random component, ensuring the resulting ULID is greater than the previous one while
+		/// providing the maximum range of possible increments.
+		/// </remarks>
+		MonotonicRandom4Byte = 4,
+	}
+
+	/// <summary>
+	/// Default monotonicity mode for generating ULIDs.
+	/// </summary>
+	/// <remarks>
+	/// Determines the monotonicity behavior used during ULID creation.
+	/// It can be configured to influence how sequential ULIDs are generated.
+	/// </remarks>
+	public static Monotonicity DefaultMonotonicity { get; set; } = Monotonicity.MonotonicIncrement;
 
 	private static readonly byte[] _lastUlid = new byte[_ulidSize];
 	private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
@@ -28,7 +99,7 @@ public readonly partial struct Ulid
 #if NET9_0_OR_GREATER
 	private static readonly Lock _lock = new();
 #else
-	private static readonly object _lock = new();
+    private static readonly object _lock = new();
 #endif
 
 	/// <summary>
@@ -43,36 +114,34 @@ public readonly partial struct Ulid
 	/// <summary>
 	/// Creates a new <see cref="Ulid"/> with the current timestamp.
 	/// </summary>
-	/// <param name="isMonotonic">
-	/// If <c>null</c> (default), the value of <see cref="DefaultIsMonotonic"/> is used to determine monotonicity.<br />
-	/// If <c>true</c>, ensures the <see cref="Ulid"/> is monotonically increasing.<br />
-	/// If <c>false</c>, generates a random <see cref="Random" /> part in <see cref="Ulid"/>.
+	/// <param name="monotonicity">
+	/// If <c>null</c> (default), the value of <see cref="DefaultMonotonicity"/> is used.<br />
+	/// Otherwise, uses the specified <see cref="Monotonicity"/> value to control the ULID generation behavior.
 	/// </param>
 	/// <returns>A new <see cref="Ulid"/> instance.</returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static Ulid New(bool? isMonotonic = null)
-		=> New(DateTimeOffset.UtcNow, isMonotonic);
+	public static Ulid New(Monotonicity? monotonicity = null)
+		=> New(DateTimeOffset.UtcNow, monotonicity);
 
 	/// <summary>
 	/// Creates a new <see cref="Ulid"/> with the specified timestamp.
 	/// </summary>
 	/// <param name="dateTimeOffset">The timestamp to use for the <see cref="Ulid"/>.</param>
-	/// <param name="isMonotonic">
-	/// If <c>null</c> (default), the value of <see cref="DefaultIsMonotonic"/> is used to determine monotonicity.<br />
-	/// If <c>true</c>, ensures the <see cref="Ulid"/> is monotonically increasing.<br />
-	/// If <c>false</c>, generates a random <see cref="Random" /> part in <see cref="Ulid"/>.
+	/// <param name="monotonicity">
+	/// If <c>null</c> (default), the value of <see cref="DefaultMonotonicity"/> is used.<br />
+	/// Otherwise, uses the specified <see cref="Monotonicity"/> value to control the ULID generation behavior.
 	/// </param>
 	/// <returns>A new <see cref="Ulid"/> instance.</returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static Ulid New(DateTimeOffset dateTimeOffset, bool? isMonotonic = null)
-		=> New(dateTimeOffset.ToUnixTimeMilliseconds(), isMonotonic);
+	public static Ulid New(DateTimeOffset dateTimeOffset, Monotonicity? monotonicity = null)
+		=> New(dateTimeOffset.ToUnixTimeMilliseconds(), monotonicity);
 
 	/// <summary>
 	/// Creates a new <see cref="Ulid"/> with the specified timestamp.
 	/// </summary>
 	/// <param name="dateTimeOffset">The timestamp to use for the <see cref="Ulid"/>.</param>
 	/// <param name="random" >
-	/// A span containing the random component of the <see cref="Ulid"/>. 
+	/// A span containing the random component of the <see cref="Ulid"/>.
 	/// It must be at least 10 bytes long, as the last 10 bytes of the <see cref="Ulid"/> are derived from this span.
 	/// </param>
 	/// <returns>A new <see cref="Ulid"/> instance.</returns>
@@ -84,17 +153,16 @@ public readonly partial struct Ulid
 	/// Creates a new <see cref="Ulid"/> with the specified timestamp in milliseconds.
 	/// </summary>
 	/// <param name="timestamp">The timestamp in milliseconds to use for the <see cref="Ulid"/>.</param>
-	/// <param name="isMonotonic">
-	/// If <c>null</c> (default), the value of <see cref="DefaultIsMonotonic"/> is used to determine monotonicity.<br />
-	/// If <c>true</c>, ensures the <see cref="Ulid"/> is monotonically increasing.<br />
-	/// If <c>false</c>, generates a random <see cref="Random" /> part in <see cref="Ulid"/>.
+	/// <param name="monotonicity">
+	/// If <c>null</c> (default), the value of <see cref="DefaultMonotonicity"/> is used.<br />
+	/// Otherwise, uses the specified <see cref="Monotonicity"/> value to control the ULID generation behavior.
 	/// </param>
 	/// <returns>A new <see cref="Ulid"/> instance.</returns>
 #if NET5_0_OR_GREATER
 	[SkipLocalsInit]
 #endif
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static Ulid New(long timestamp, bool? isMonotonic = null)
+	public static Ulid New(long timestamp, Monotonicity? monotonicity = null)
 	{
 		Ulid ulid = default;
 
@@ -103,7 +171,7 @@ public readonly partial struct Ulid
 			var ulidBytes = new Span<byte>(Unsafe.AsPointer(ref Unsafe.AsRef(in ulid)), _ulidSize);
 
 			FillTime(ulidBytes, timestamp);
-			FillRandom(ulidBytes, isMonotonic ?? DefaultIsMonotonic);
+			FillRandom(ulidBytes, monotonicity ?? DefaultMonotonicity);
 		}
 
 		return ulid;
@@ -117,7 +185,7 @@ public readonly partial struct Ulid
 	/// This value will be encoded into the first 6 bytes of the <see cref="Ulid"/>.
 	/// </param>
 	/// <param name="random">
-	/// A span containing the random component of the <see cref="Ulid"/>. 
+	/// A span containing the random component of the <see cref="Ulid"/>.
 	/// It must be at least 10 bytes long, as the last 10 bytes of the <see cref="Ulid"/> are derived from this span.
 	/// </param>
 	/// <returns>
@@ -165,7 +233,7 @@ public readonly partial struct Ulid
 			}
 			else
 			{
-				// If the system is big-endian, just copy the bytes directly.
+				// If the system is big-endian, copy the bytes directly.
 				bytes[5] = Unsafe.Add(ref firstByte, 7);
 
 				bytes[0] = Unsafe.Add(ref firstByte, 2);
@@ -180,21 +248,11 @@ public readonly partial struct Ulid
 #if NET5_0_OR_GREATER
 	[SkipLocalsInit]
 #endif
-	private static void FillRandom(Span<byte> bytes, bool isMonotonic)
+	private static void FillRandom(Span<byte> bytes, Monotonicity monotonicity)
 	{
-		if (!isMonotonic)
+		if (monotonicity == Monotonicity.NonMonotonic)
 		{
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
 			_rng.GetBytes(bytes[_ulidSizeTime..]);
-#else
-			// In NetStandard 2.0, RandomNumberGenerator.GetBytes() does not support Span<byte> overloads.
-			var random = ArrayPool<byte>.Shared.Rent(_ulidSizeRandom);
-
-			_rng.GetBytes(random, 0, _ulidSizeRandom);
-			new ReadOnlySpan<byte>(random, 0, _ulidSizeRandom).CopyTo(bytes[_ulidSizeTime..]);
-
-			ArrayPool<byte>.Shared.Return(random, true);
-#endif
 			return;
 		}
 
@@ -205,13 +263,16 @@ public readonly partial struct Ulid
 			// If the timestamp is the same or lesser than the last one, increment the last ULID by one
 			if (bytes[.._ulidSizeTime].SequenceCompareTo(lastUlidSpan[.._ulidSizeTime]) <= 0)
 			{
-				var i = _ulidSize;
-				while (i > 0)
+				if (monotonicity == Monotonicity.MonotonicIncrement)
 				{
-					if (++_lastUlid[--i] != 0)
-					{
-						break;
-					}
+					IncrementByteSpan(lastUlidSpan, ReadOnlySpan<byte>.Empty);
+				}
+				else
+				{
+					var randomByteCount = (int)monotonicity;
+					// We can use the last bytes of incomplete ULID for the increment parameter
+					_rng.GetBytes(bytes[..^randomByteCount]);
+					IncrementByteSpan(lastUlidSpan, bytes[..^randomByteCount]);
 				}
 			}
 			// Otherwise, generate a new ULID
@@ -223,5 +284,58 @@ public readonly partial struct Ulid
 
 			_lastUlid.CopyTo(bytes);
 		}
+	}
+
+#if NET5_0_OR_GREATER
+	[SkipLocalsInit]
+#endif
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void IncrementByteSpan(Span<byte> targetSpan, ReadOnlySpan<byte> sourceSpan)
+	{
+		ushort carry = 1; // max sum 255+255+1 = 511; guarantee at least +1
+
+		// This value represents the offset from the start of targetSpan to the start of sourceSpan
+		var lengthDifference = targetSpan.Length - sourceSpan.Length;
+		ushort sum; // Per-byte additions placeholder
+
+		// Phase 1: Process the common length part (where both targetSpan and sourceSpan contribute)
+		if (sourceSpan.Length != 0)
+		{
+			for (var i = targetSpan.Length - 1; i >= lengthDifference; --i)
+			{
+				var sourceIdx = i - lengthDifference;
+
+				var byteFromTarget = targetSpan[i];
+				var byteFromSource = sourceSpan[sourceIdx];
+
+				sum = (ushort)(byteFromTarget + byteFromSource + carry);
+				targetSpan[i] = (byte)(sum & 0xFF);
+				carry = (ushort)(sum >> 8);
+			}
+		}
+
+		// Phase 2: Process the remaining part of targetSpan (only carry propagation)
+		if (carry == 0)
+		{
+			return;
+		}
+
+		// Runs from the point where sourceSpan ended, towards the MSB end of targetSpan
+		for (var i = lengthDifference - 1; i >= 0; i--)
+		{
+			var byteFromTarget = targetSpan[i];
+			sum = (ushort)(byteFromTarget + carry);
+			targetSpan[i] = (byte)(sum & 0xFF);
+			carry = (ushort)(sum >> 8);
+
+			if (carry == 0)
+			{
+				return; // No more carry to propagate
+			}
+		}
+
+		// If there's still a carry (we have not returned from the method),
+		// it indicates an overflow beyond the original targetSpan's capacity.
+		throw new OverflowException("Addition resulted in a value larger than the target span's capacity.");
 	}
 }

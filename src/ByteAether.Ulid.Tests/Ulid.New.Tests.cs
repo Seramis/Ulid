@@ -18,30 +18,28 @@ public class UlidNewTests
 	}
 
 	[Theory]
-	[InlineData(true)]
-	[InlineData(false)]
-	public void New_ShouldGenerateUniqueUlids(bool isMonotonic)
+	[CombinatorialData]
+	public void New_ShouldGenerateUniqueUlids(Ulid.Monotonicity monotonicity)
 	{
 		// Act
-		var ulid1 = Ulid.New(isMonotonic);
-		var ulid2 = Ulid.New(isMonotonic);
+		var ulid1 = Ulid.New(monotonicity);
+		var ulid2 = Ulid.New(monotonicity);
 
 		// Assert
 		Assert.NotEqual(ulid1, ulid2);
 	}
 
 	[Theory]
-	[InlineData(true)]
-	[InlineData(false)]
-	public void New_WithDateTime_ShouldGenerateUniqueUlids(bool isMonotonic)
+	[CombinatorialData]
+	public void New_WithDateTime_ShouldGenerateUniqueUlids(Ulid.Monotonicity monotonicity)
 	{
 		// Arrange
 		var dateTimeOffset = DateTimeOffset.UtcNow;
 		var timestamp = dateTimeOffset.ToUnixTimeMilliseconds();
 
 		// Act
-		var ulid1 = Ulid.New(dateTimeOffset, isMonotonic);
-		var ulid2 = Ulid.New(dateTimeOffset, isMonotonic);
+		var ulid1 = Ulid.New(dateTimeOffset, monotonicity);
+		var ulid2 = Ulid.New(dateTimeOffset, monotonicity);
 
 		// Assert
 		Assert.NotEqual(ulid1, ulid2);
@@ -50,7 +48,7 @@ public class UlidNewTests
 		Assert.True(timestamp <= ulid1.Time.ToUnixTimeMilliseconds());
 		Assert.True(timestamp <= ulid2.Time.ToUnixTimeMilliseconds());
 
-		if (isMonotonic)
+		if (monotonicity != Ulid.Monotonicity.NonMonotonic)
 		{
 			Assert.True(MemoryExtensions.SequenceCompareTo(ulid1.AsByteSpan(), ulid2.AsByteSpan()) < 0);
 			Assert.True(ulid1 < ulid2);
@@ -58,17 +56,16 @@ public class UlidNewTests
 	}
 
 	[Theory]
-	[InlineData(true)]
-	[InlineData(false)]
-	public void New_WithTimestamp_ShouldGenerateUniqueUlids(bool isMonotonic)
+	[CombinatorialData]
+	public void New_WithTimestamp_ShouldGenerateUniqueUlids(Ulid.Monotonicity monotonicity)
 	{
 		// Arrange
 		var dateTimeOffset = DateTimeOffset.UtcNow;
 		var timestamp = dateTimeOffset.ToUnixTimeMilliseconds();
 
 		// Act
-		var ulid1 = Ulid.New(timestamp, isMonotonic);
-		var ulid2 = Ulid.New(timestamp, isMonotonic);
+		var ulid1 = Ulid.New(timestamp, monotonicity);
+		var ulid2 = Ulid.New(timestamp, monotonicity);
 
 		// Assert
 		Assert.NotEqual(ulid1, ulid2);
@@ -77,7 +74,7 @@ public class UlidNewTests
 		Assert.True(timestamp <= ulid1.Time.ToUnixTimeMilliseconds());
 		Assert.True(timestamp <= ulid2.Time.ToUnixTimeMilliseconds());
 
-		if (isMonotonic)
+		if (monotonicity != Ulid.Monotonicity.NonMonotonic)
 		{
 			Assert.True(MemoryExtensions.SequenceCompareTo(ulid1.AsByteSpan(), ulid2.AsByteSpan()) < 0);
 			Assert.True(ulid1 < ulid2);
@@ -133,20 +130,17 @@ public class UlidNewTests
 	}
 
 	[Theory]
-	[InlineData(false)]
-	[InlineData(true)]
-	[InlineData(null, true)]
-	[InlineData(null, false)]
-	public void New_WithTimestampAndMonotonicSet_ShouldGenerateUniqueUlids(bool? isMonotonic, bool defaultIsMonotonic = true)
+	[CombinatorialData]
+	public void New_WithTimestampAndMonotonicSet_ShouldGenerateUniqueUlids(Ulid.Monotonicity? monotonicity, Ulid.Monotonicity defaultMonotonicity)
 	{
 		// Arrange
-		Ulid.DefaultIsMonotonic = defaultIsMonotonic;
+		Ulid.DefaultMonotonicity = defaultMonotonicity;
 		var dateTimeOffset = DateTimeOffset.UtcNow;
 		var timestamp = dateTimeOffset.ToUnixTimeMilliseconds();
 
 		// Act
-		var ulid1 = Ulid.New(timestamp, isMonotonic);
-		var ulid2 = Ulid.New(timestamp, isMonotonic);
+		var ulid1 = Ulid.New(timestamp, monotonicity);
+		var ulid2 = Ulid.New(timestamp, monotonicity);
 
 		// Assert
 		Assert.NotEqual(ulid1, ulid2);
@@ -155,7 +149,7 @@ public class UlidNewTests
 		Assert.True(timestamp <= ulid1.Time.ToUnixTimeMilliseconds());
 		Assert.True(timestamp <= ulid2.Time.ToUnixTimeMilliseconds());
 
-		if (isMonotonic ?? defaultIsMonotonic)
+		if ((monotonicity ?? defaultMonotonicity) != Ulid.Monotonicity.NonMonotonic)
 		{
 			Assert.True(MemoryExtensions.SequenceCompareTo(ulid1.AsByteSpan(), ulid2.AsByteSpan()) < 0);
 			Assert.True(ulid1 < ulid2);

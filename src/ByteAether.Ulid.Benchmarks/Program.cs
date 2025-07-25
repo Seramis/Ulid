@@ -41,7 +41,7 @@ public class Generate
 public class GenerateNonMono
 {
 	[Benchmark]
-	public ByteAether.Ulid.Ulid ByteAetherUlid() => ByteAether.Ulid.Ulid.New(isMonotonic: false);
+	public ByteAether.Ulid.Ulid ByteAetherUlid() => ByteAether.Ulid.Ulid.New(ByteAether.Ulid.Ulid.Monotonicity.NonMonotonic);
 
 	[Benchmark]
 	public System.Ulid Ulid() => System.Ulid.NewUlid();

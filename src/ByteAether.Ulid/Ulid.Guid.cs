@@ -3,7 +3,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 #if NETCOREAPP
 using System.Runtime.Intrinsics;
+#if !NET7_0_OR_GREATER
 using System.Runtime.Intrinsics.X86;
+#endif
 #endif
 
 namespace ByteAether.Ulid;

@@ -1,4 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
@@ -13,8 +16,8 @@ var benchmarkConfig = ManualConfig
 	.HideColumns(Column.Job, Column.StdDev, Column.Median)
 ;
 
-BenchmarkRunner.Run(
-	typeof(Program).Assembly,
+BenchmarkRunner.Run<GenerateNonMono>(
+	//typeof(Program).Assembly,
 	benchmarkConfig
 );
 
@@ -22,6 +25,102 @@ BenchmarkRunner.Run(
 #pragma warning disable CA1822 // Benchmark methods can not be static
 #pragma warning disable CA1050 // Declare types in namespaces
 // ReSharper disable PossiblyImpureMethodCallOnReadonlyVariable NetUlid.ToString() is not marked as pure function.
+
+/**
+| Method             | Mean      | Error    | Allocated |
+|------------------- |----------:|---------:|----------:|
+| ByteAetherUlid     | 638.28 ns | 2.160 ns |         - |
+| ByteAetherUlidP    |  35.58 ns | 0.174 ns |         - |
+| ByteAetherUlidXorS |  33.65 ns | 0.093 ns |         - |
+| Ulid               |  34.76 ns | 0.068 ns |         - |
+ */
+public readonly struct XorShift64RandomProvider : ByteAether.Ulid.IRandomProvider
+{
+    [ThreadStatic]
+    private static ulong _state;
+
+    public XorShift64RandomProvider()
+    {
+	    Span<byte> seedBuffer = stackalloc byte[sizeof(ulong)];
+	    RandomNumberGenerator.Fill(seedBuffer);
+	    _state = MemoryMarshal.Read<ulong>(seedBuffer);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ulong Next(ref ulong state)
+    {
+	    state ^= state << 7;
+	    state ^= state >> 9;
+	    return state;
+    }
+
+    /// <inheritdoc/>
+#if NETCOREAPP3_0_OR_GREATER
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+#else
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    public void GetBytes(Span<byte> buffer)
+    {
+        if (buffer.IsEmpty)
+        {
+	        return;
+        }
+
+        // Local copy of state to allow the compiler to bind it directly to CPU registers
+        var s = _state;
+
+        ref var byteRef = ref MemoryMarshal.GetReference(buffer);
+        var length = buffer.Length;
+
+        var ulongCount = length >> 3; // Bitshift instead of division (length / 8)
+        if (ulongCount > 0)
+        {
+            ref var ulongRef = ref Unsafe.As<byte, ulong>(ref byteRef);
+
+            for (var i = 0; i < ulongCount; i++)
+            {
+                Unsafe.Add(ref ulongRef, i) = Next(ref s);
+            }
+        }
+
+        // 4. Tail Block: Handle remaining 1-7 bytes cleanly using bit masks instead of modulo loops
+        var remaining = length & 7; // Bitwise AND instead of modulo (length % 8)
+        if (remaining > 0)
+        {
+	        Next(ref s);
+
+            // Offset to the starting byte of the remaining segment
+            ref var tailRef = ref Unsafe.Add(ref byteRef, length - remaining);
+
+            // Small, unrolled, branchless write logic for performance stability
+            if (remaining >= 4)
+            {
+                Unsafe.As<byte, uint>(ref tailRef) = (uint)s;
+                tailRef = ref Unsafe.Add(ref tailRef, 4);
+                s >>= 32;
+                remaining -= 4;
+            }
+            if (remaining >= 2)
+            {
+                Unsafe.As<byte, ushort>(ref tailRef) = (ushort)s;
+                tailRef = ref Unsafe.Add(ref tailRef, 2);
+                s >>= 16;
+                remaining -= 2;
+            }
+            if (remaining > 0)
+            {
+                tailRef = (byte)s;
+            }
+        }
+
+        // Write the local register state back to the ThreadStatic field
+        _state = s;
+    }
+}
+
+
+
 
 [MemoryDiagnoser]
 public class Generate
@@ -84,6 +183,12 @@ public class GenerateNonMono
 		InitialRandomSource = new ByteAether.Ulid.PseudoRandomProvider()
 	};
 
+	private static readonly ByteAether.Ulid.Ulid.GenerationOptions _byteAetherUlidOptionsNonMonoXorS = new()
+	{
+		Monotonicity = ByteAether.Ulid.Ulid.GenerationOptions.MonotonicityOptions.NonMonotonic,
+		InitialRandomSource = new XorShift64RandomProvider()
+	};
+
 	[Benchmark]
 	public ByteAether.Ulid.Ulid ByteAetherUlid() => ByteAether.Ulid.Ulid.New(_byteAetherUlidOptionsNonMono);
 
@@ -91,16 +196,19 @@ public class GenerateNonMono
 	public ByteAether.Ulid.Ulid ByteAetherUlidP() => ByteAether.Ulid.Ulid.New(_byteAetherUlidOptionsNonMonoP);
 
 	[Benchmark]
-	public System.Ulid Ulid() => System.Ulid.NewUlid();
+	public ByteAether.Ulid.Ulid ByteAetherUlidXorS() => ByteAether.Ulid.Ulid.New(_byteAetherUlidOptionsNonMonoXorS);
 
 	[Benchmark]
+	public System.Ulid Ulid() => System.Ulid.NewUlid();
+
+	/*[Benchmark]
 	public NUlid.Ulid NUlid() => global::NUlid.Ulid.NewUlid();
 
 	[Benchmark]
 	public System.Guid Guid() => System.Guid.NewGuid();
 
 	[Benchmark]
-	public System.Guid GuidV7() => System.Guid.CreateVersion7();
+	public System.Guid GuidV7() => System.Guid.CreateVersion7();*/
 }
 
 [MemoryDiagnoser]

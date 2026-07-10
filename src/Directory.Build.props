@@ -1,0 +1,50 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- NuGet Packaging -->
+    <IsPackable>false</IsPackable>
+    <Deterministic>true</Deterministic>
+    <InvariantGlobalization>true</InvariantGlobalization>
+
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <Authors>Joonatan Uusväli</Authors>
+    <Company>ByteAether</Company>
+    <Copyright>© $(Authors), $(Company). All rights reserved.</Copyright>
+
+    <RepositoryUrl>https://github.com/ByteAether/Ulid</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <PackageProjectUrl>$(RepositoryUrl)/tree/v$(PackageVersion)</PackageProjectUrl>
+    <PackageReleaseNotes>See $(RepositoryUrl)/releases/tag/v$(PackageVersion)</PackageReleaseNotes>
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>logo.png</PackageIcon>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'CI-Release'"><Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+
+    <PublishRelease>true</PublishRelease>
+    <PackRelease>true</PackRelease>
+
+    <RuntimeIdentifierGraphPath Condition="'$(RuntimeIdentifierGraphPath)' == ''"></RuntimeIdentifierGraphPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'CI-Debug'">
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\assets\logo.png" Pack="true" PackagePath="\" Visible="false" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\LICENSE" />
+  </ItemGroup>
+</Project>

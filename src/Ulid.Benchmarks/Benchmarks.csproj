@@ -4,8 +4,17 @@
     <OutputType>exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+
+    <RootNamespace>ByteAether.Ulid.Benchmarks</RootNamespace>
   </PropertyGroup>
+
+  <Target Name="SkipBenchmarkOnCI" BeforeTargets="BeforeBuild;Build;Restore" Condition="'$(IsCIBuild)' == 'true'">
+    <PropertyGroup>
+      <DesignTimeBuild>true</DesignTimeBuild>
+      <BuildingProject>false</BuildingProject>
+    </PropertyGroup>
+    <Message Importance="high" Text="Skipping benchmark project compilation for CI loop." />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
@@ -15,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ByteAether.Ulid\ByteAether.Ulid.csproj" />
+    <ProjectReference Include="..\Ulid\Impl.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,25 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+    <NoWarn>NU1903</NoWarn>
 
-    <IsTestProject>true</IsTestProject>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-
-    <UseDataCollector/>
-
-    <RootNamespace>ByteAether.Ulid.EntityFrameworkCore.Tests</RootNamespace>
+    <RootNamespace>ByteAether.Ulid.LinqToDB.IntegrationTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0'"/>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0'"/>
-    <PackageReference Include="Xunit.Combinatorial" Version="1.6.24" />
 
     <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2" Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0'">
       <PrivateAssets>all</PrivateAssets>
@@ -30,15 +20,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageReference Include="xunit" Version="2.9.3"/>
+    <PackageReference Include="xunit" Version="2.9.3" />
+
+    <PackageReference Include="linq2db" Version="6.3.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EFCore\EFCore.Impl.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit"/>
+    <ProjectReference Include="..\LinqToDB\LinqToDB.Impl.csproj" />
   </ItemGroup>
 
 </Project>

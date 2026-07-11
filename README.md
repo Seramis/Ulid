@@ -59,6 +59,7 @@ ULID addresses this by design, mandating strict lexicographical sortability and 
 
 ### Extension Packages
 * **[ByteAether.Ulid.EntityFrameworkCore](#ef-core-integration--byteaetherulidentityframeworkcore)**: Dedicated Entity Framework Core integration providing specialized storage formats (`String`, `Binary`, `Guid`, and `SqlServerGuid`).
+* **[ByteAether.Ulid.linq2db](#linqtodb-integration--byteaetherulidlinq2db)**: Official LinqToDB integration supporting global type mappings and optimized storage schemes (`String`, `Binary`, `Guid`, and `SqlServerGuid`).
 
 These features collectively make **ByteAether.Ulid** a robust and efficient choice for managing unique identifiers in your .NET applications.
 
@@ -292,8 +293,9 @@ Supports seamless integration as a route or query parameter with built-in `TypeC
 
 Includes a `JsonConverter` for easy serialization and deserialization.
 
-### EF Core Integration – ByteAether.Ulid.EntityFrameworkCore
+### [EF Core](https://github.com/dotnet/efcore) Integration – ByteAether.Ulid.EntityFrameworkCore
 [![License](https://img.shields.io/github/license/ByteAether/Ulid?logo=github&label=License)](https://github.com/ByteAether/Ulid/blob/main/LICENSE)
+![Entity Framework Core 6.0.0+](https://img.shields.io/badge/Entity_Framework_Core-6.0.0+-orange)
 [![NuGet Version](https://img.shields.io/nuget/v/ByteAether.Ulid.EntityFrameworkCore?logo=nuget&label=Version)](https://www.nuget.org/packages/ByteAether.Ulid.EntityFrameworkCore/)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/ByteAether.Ulid.EntityFrameworkCore?logo=nuget&label=Downloads)](https://www.nuget.org/packages/ByteAether.Ulid.EntityFrameworkCore/)
 
@@ -304,7 +306,7 @@ Includes a `JsonConverter` for easy serialization and deserialization.
 ![.NET 7.0](https://img.shields.io/badge/.NET-7.0-green)
 ![.NET 6.0](https://img.shields.io/badge/.NET-6.0-green)
 
-To seamlessly use ULIDs with Entity Framework Core, install the specialized extension package:
+To seamlessly use ULIDs with [Entity Framework Core](https://github.com/dotnet/efcore), install the specialized extension package:
 
 ```sh
 dotnet add package ByteAether.Ulid.EntityFrameworkCore
@@ -350,6 +352,41 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
         .HasConversion<UlidToSqlServerGuidConverter>();
 }
 ```
+
+### [LinqToDB](https://github.com/linq2db/linq2db) Integration – ByteAether.Ulid.linq2db
+
+[![License](https://img.shields.io/github/license/ByteAether/Ulid?logo=github&label=License)](https://github.com/ByteAether/Ulid/blob/main/LICENSE)
+![LinqToDB 6.0.0+](https://img.shields.io/badge/LinqToDB-6.0.0+-orange)
+[![NuGet Version](https://img.shields.io/nuget/v/ByteAether.Ulid.linq2db?logo=nuget&label=Version)](https://www.nuget.org/packages/ByteAether.Ulid.linq2db/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/ByteAether.Ulid.linq2db?logo=nuget&label=Downloads)](https://www.nuget.org/packages/ByteAether.Ulid.linq2db/)
+
+![.NET AOT Ready](https://img.shields.io/badge/.NET-AOT_Ready-blue)
+![.NET 10.0](https://img.shields.io/badge/.NET-10.0-brightgreen)
+![.NET 9.0](https://img.shields.io/badge/.NET-9.0-brightgreen)
+![.NET 8.0](https://img.shields.io/badge/.NET-8.0-brightgreen)
+![.NET 7.0](https://img.shields.io/badge/.NET-7.0-green)
+![.NET 6.0](https://img.shields.io/badge/.NET-6.0-green)
+
+To integrate with [LinqToDB](https://github.com/linq2db/linq2db), install the specialized extension package:
+
+```sh
+dotnet add package ByteAether.Ulid.linq2db
+```
+
+Register the ULID conventions for your `DataOptions` instance using your preferred storage backend format (`String`, `Binary`, `Guid`, or `SqlServerGuid`):
+
+```csharp
+using LinqToDB;
+using ByteAether.Ulid.LinqToDB;
+
+var options = new DataOptions()
+    .UseSQLite()
+    .UseConnectionString(connectionString)
+    // Registers mapping for both Ulid and Ulid? types.
+    // Supports: UlidStorageFormat.String (Default), Binary, Guid, and SqlServerGuid
+    .RegisterUlid(UlidStorageFormat.Binary);
+```
+
 ### Dapper Integration
 To use ULIDs with Dapper, you can create a custom **TypeHandler** to convert between `Ulid` and `byte[]`. Here's how to set it up:
 

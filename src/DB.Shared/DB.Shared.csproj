@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+    <OutputType>library</OutputType>
+    <IsAotCompatible>true</IsAotCompatible>
+
+    <RootNamespace>ByteAether.Ulid.DB.Shared</RootNamespace>
+    <AssemblyName>ByteAether.Ulid.DB.Shared</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ulid\Impl.csproj" />
+  </ItemGroup>
+
+</Project>
